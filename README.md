@@ -34,6 +34,7 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 ## Operación del evento
 
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
-- Para iniciar extracciones, cambia el estado de la jornada a `En sorteo`.
+- A la hora programada, la jornada cambia a `En sorteo` y el primer número se extrae automáticamente.
+- Las extracciones siguientes se realizan desde el panel después de confirmar el premio o registrar la ausencia del número anterior.
 - Tras cada número, confirma la entrega presencial o marca la ausencia. Los números ausentes no vuelven al pool.
 - Al entregar todos los premios, marca la jornada como `Finalizada` para revelar las semillas de verificación.

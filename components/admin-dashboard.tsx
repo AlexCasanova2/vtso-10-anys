@@ -63,9 +63,20 @@ export function AdminDashboard({ user }: { user: User }) {
     let active = true;
     const query = new URLSearchParams({ eventId, ...(deferredSearch ? { q: deferredSearch } : {}) });
     request(`/api/admin/entries?${query}`).then((body) => active && setEntries(body.entries)).catch((error) => active && setMessage({ type: "error", text: error.message }));
-    request(`/api/public/event?id=${eventId}`).then((body) => active && setPublicEvent(body.event));
     return () => { active = false; };
   }, [eventId, deferredSearch]);
+  useEffect(() => {
+    if (!eventId) return;
+    let active = true;
+    const loadLiveEvent = () => request(`/api/public/event?id=${eventId}`).then((body) => {
+      if (!active) return;
+      setPublicEvent(body.event);
+      if (body.event) setEvents((currentEvents) => currentEvents.map((event) => event.id === eventId ? { ...event, status: body.event.status } : event));
+    }).catch((error) => active && setMessage({ type: "error", text: error.message }));
+    loadLiveEvent();
+    const timer = window.setInterval(loadLiveEvent, 3000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [eventId]);
   useEffect(() => {
     if (tab !== "people") return;
     const query = deferredSearch ? `?q=${encodeURIComponent(deferredSearch)}` : "";

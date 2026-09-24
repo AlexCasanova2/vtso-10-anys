@@ -32,6 +32,24 @@ export async function reconcileEventStatuses(now = new Date()) {
       return;
     }
 
+    if (nowIso >= event.starts_at && ["scheduled", "registration_open", "registration_closed"].includes(event.status)) {
+      const { data: started, error: startError } = await supabase
+        .from("events")
+        .update({ status: "drawing", updated_at: nowIso })
+        .eq("id", event.id)
+        .eq("status", event.status)
+        .select("id")
+        .maybeSingle();
+
+      if (startError || !started) return;
+
+      const { error: drawError } = await supabase.rpc("draw_next", { p_event_id: event.id, p_actor_id: null });
+      if (drawError && !drawError.message.includes("NO_ELIGIBLE_ENTRIES")) {
+        console.error(`Automatic first draw failed for event ${event.id}`, drawError);
+      }
+      return;
+    }
+
     if (nowIso >= event.registration_closes_at && ["scheduled", "registration_open"].includes(event.status)) {
       await supabase.from("events").update({ status: "registration_closed", updated_at: nowIso }).eq("id", event.id);
       return;
