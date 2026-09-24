@@ -6,6 +6,15 @@ import type { EventDay } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  try {
+    return await getEvent(request);
+  } catch (error) {
+    console.error("Public event API failed", error);
+    return NextResponse.json({ error: "No s'ha pogut connectar amb la base de dades" }, { status: 500 });
+  }
+}
+
+async function getEvent(request: Request) {
   const eventId = new URL(request.url).searchParams.get("id");
   await reconcileEventStatuses();
   const supabase = createAdminClient();

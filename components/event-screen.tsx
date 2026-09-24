@@ -28,9 +28,8 @@ function Countdown({ target }: { target: string }) {
   return <div className="countdown">{parts.map((part, index) => <div key={index}><strong>{String(part).padStart(2, "0")}</strong><span>{["dies", "hores", "min", "seg"][index]}</span></div>)}</div>;
 }
 
-export function EventScreen({ displayMode = false }: { displayMode?: boolean }) {
+export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: boolean; baseUrl: string }) {
   const event = useEvent();
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
   if (event === undefined) return <main className="event-shell loading">Preparant la celebració…</main>;
   if (!event) return <main className="event-shell empty"><Brand /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p><Link className="button" href="/admin">Administració</Link></main>;
