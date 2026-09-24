@@ -47,11 +47,13 @@ export function RegistrationForm({ eventId }: { eventId?: string }) {
     <main className="register-shell success-page">
       <section className="ticket-card">
         <div className="ticket-top"><Brand /><span className="ticket-icon"><Ticket /></span></div>
-        <p className="eyebrow">Participació confirmada</p>
+        <p className="eyebrow">Inscripció completada</p>
+        <h1 className="display">Gràcies!</h1>
+        <p className="success-lead">T&apos;has registrat correctament al sorteig.</p>
         <p className="ticket-number">{formatNumber(result.number)}</p>
-        <h1 className="display">Aquest és el teu número</h1>
+        <p className="ticket-label">Aquest és el teu número de participació</p>
         <div className="ticket-details"><span>{event.name}</span><span>{formatDateTime(event.starts_at)}</span><span>{event.venue}</span></div>
-        <div className={result.emailSent ? "success" : "error"}>{result.emailSent ? <><Mail size={17} /> T&apos;hem enviat una còpia per correu electrònic.</> : <>La teva participació és vàlida, però el correu no s&apos;ha pogut enviar. L&apos;equip el podrà reenviar.</>}</div>
+        <div className={result.emailSent ? "success" : "error"}>{result.emailSent ? <><Mail size={17} /> Revisa la safata d&apos;entrada del teu correu electrònic. També et recomanem comprovar el correu brossa.</> : <>La teva participació és vàlida, però el correu no s&apos;ha pogut enviar. L&apos;equip el podrà reenviar.</>}</div>
         <p className="presence-note"><Check size={18} /> Si el teu número resulta premiat, hauràs de ser-hi per recollir-lo.</p>
         <Link href="/" className="button secondary"><ArrowLeft size={17} /> Tornar a l&apos;esdeveniment</Link>
       </section>
