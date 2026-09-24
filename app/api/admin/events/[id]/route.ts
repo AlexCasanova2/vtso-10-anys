@@ -24,3 +24,21 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "event.updated", entity_type: "event", entity_id: id, payload: value });
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
+  const auth = await requireApiAdmin("admin");
+  if (auth.error) return auth.error;
+  const { id } = await context.params;
+  const supabase = createAdminClient();
+  const [{ data: event }, entries] = await Promise.all([
+    supabase.from("events").select("name").eq("id", id).maybeSingle(),
+    supabase.from("entries").select("id", { count: "exact", head: true }).eq("event_id", id),
+  ]);
+  if (!event) return apiError("No s'ha trobat la jornada", 404);
+  if ((entries.count ?? 0) > 0) return apiError("No es pot eliminar una jornada que ja té participacions. Finalitza-la per conservar-ne l'històric.", 409);
+
+  const { error } = await supabase.from("events").delete().eq("id", id);
+  if (error) return apiError("No s'ha pogut eliminar la jornada", 500);
+  await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "event.deleted", entity_type: "event", entity_id: id, payload: { name: event.name } });
+  return NextResponse.json({ ok: true });
+}

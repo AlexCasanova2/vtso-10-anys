@@ -2,7 +2,7 @@
 
 import { FormEvent, startTransition, useDeferredValue, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Check, ChevronRight, CircleDollarSign, Download, ExternalLink, Gift, LayoutDashboard, LoaderCircle, LogOut, Mail, Pencil, Plus, Search, Settings, TicketCheck, UserRound, Users, X } from "lucide-react";
+import { CalendarClock, Check, ChevronRight, CircleDollarSign, Download, ExternalLink, Gift, LayoutDashboard, LoaderCircle, LogOut, Mail, Pencil, Plus, Search, Settings, TicketCheck, Trash2, UserRound, Users, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { formatMoney, formatNumber, type EventDay, type PublicEvent } from "@/lib/types";
 import { Brand } from "@/components/brand";
@@ -97,7 +97,7 @@ export function AdminDashboard({ user }: { user: User }) {
       {message && <div className={`admin-message ${message.type}`}><span>{message.text}</span><button onClick={() => setMessage(null)}><X size={16} /></button></div>}
       {tab === "event" && <EventTab event={current} live={publicEvent} entries={entries} search={search} setSearch={setSearch} selected={selected} setSelected={setSelected} busy={busy} draw={draw} exportEntries={exportEntries} onChanged={() => { setSelected(null); loadEvents(eventId); }} setMessage={setMessage} />}
       {tab === "people" && <PeopleTab participants={participants} search={search} setSearch={setSearch} event={events.find((event) => event.id === crmEventId)} canConfigure={user.role === "admin"} onConfigure={() => { if (crmEventId !== "all") { setEventId(crmEventId); setCreating(false); setTab("settings"); } }} />}
-      {tab === "settings" && user.role === "admin" && <SettingsTab key={creating ? "new" : current?.id} event={creating ? undefined : current} onCancel={() => { setCreating(false); setTab(current ? "people" : "event"); }} onSaved={(id) => { setCreating(false); setCrmEventId(id); loadEvents(id); setTab("people"); setMessage({ type: "success", text: "Configuració desada" }); }} setMessage={setMessage} />}
+      {tab === "settings" && user.role === "admin" && <SettingsTab key={creating ? "new" : current?.id} event={creating ? undefined : current} onCancel={() => { setCreating(false); setTab(current ? "people" : "event"); }} onSaved={(id) => { setCreating(false); setCrmEventId(id); loadEvents(id); setTab("people"); setMessage({ type: "success", text: "Configuració desada" }); }} onDeleted={() => { setCreating(false); setCrmEventId("all"); loadEvents(); setTab("people"); setMessage({ type: "success", text: "Jornada eliminada" }); }} setMessage={setMessage} />}
     </section>
   </main>;
 }
@@ -129,7 +129,7 @@ function PeopleTab({ participants, search, setSearch, event, canConfigure, onCon
   return <div className="admin-content"><div className="section-heading crm-heading"><div><p className="eyebrow">{event ? "Històric per jornada" : "Històric complet"}</p><h1 className="display">{event?.name ?? "CRM de participants"}</h1>{event && <p className="crm-filter-summary">{visibleParticipants.length} participants en aquesta jornada</p>}</div><div className="crm-heading-actions">{event && canConfigure && <button className="button secondary small" onClick={onConfigure}><Settings size={16} /> Configura la jornada</button>}<label className="search-box"><Search size={18}/><input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder={event ? "Cerca en aquesta jornada" : "Cerca en les tres jornades"} /></label></div></div>{event && <div className="journey-summary"><div><small>Obertura</small><strong>{shortDate(event.registration_opens_at)}</strong></div><div><small>Tancament</small><strong>{shortDate(event.registration_closes_at)}</strong></div><div><small>Sorteig</small><strong>{shortDate(event.starts_at)}</strong></div><div><small>Premis</small><strong>{event.prize_count} × {formatMoney(event.prize_value_cents)}</strong></div><div><small>Estat</small><strong><i className={`status-dot ${event.status}`} />{statusLabels[event.status]}</strong></div></div>}<div className="crm-grid">{visibleParticipants.map((person)=><article className="crm-card card" key={person.id}><div className="crm-person"><span>{person.first_name[0]}{person.last_name[0]}</span><div><h3>{person.first_name} {person.last_name}</h3><p>{person.email}</p><small>{person.document_type.toUpperCase()} · {person.document_number}</small></div></div><div className="history-label">{person.entries.length} {person.entries.length === 1 ? "jornada" : "jornades"}</div><div className="history-list">{person.entries.map((entry)=><div key={entry.id}><span className="number-chip">{formatNumber(entry.number)}</span><span><b>{entry.events.name}</b><small>{entry.draws.some((draw)=>draw.status === "awarded") ? "Guanyador" : "Hi va participar"}</small></span></div>)}</div></article>)}</div>{!visibleParticipants.length && <div className="table-empty">No hi ha participants que coincideixin amb la jornada i la cerca.</div>}</div>;
 }
 
-function SettingsTab({ event, onCancel, onSaved, setMessage }: { event?: AdminEvent; onCancel:()=>void; onSaved:(id:string)=>void; setMessage:(v:{type:"error"|"success";text:string})=>void }) {
+function SettingsTab({ event, onCancel, onSaved, onDeleted, setMessage }: { event?: AdminEvent; onCancel:()=>void; onSaved:(id:string)=>void; onDeleted:()=>void; setMessage:(v:{type:"error"|"success";text:string})=>void }) {
   const [busy, setBusy] = useState(false);
   const isNew = !event;
   const local = (value?: string) => value ? new Date(new Date(value).getTime() - new Date(value).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
@@ -154,6 +154,16 @@ function SettingsTab({ event, onCancel, onSaved, setMessage }: { event?: AdminEv
     finally { setBusy(false); }
   }
 
+  async function remove() {
+    if (!event || !window.confirm(`Vols eliminar definitivament la jornada “${event.name}”?`)) return;
+    setBusy(true);
+    try {
+      await request(`/api/admin/events/${event.id}`, { method: "DELETE" });
+      onDeleted();
+    } catch (error) { setMessage({ type: "error", text: (error as Error).message }); }
+    finally { setBusy(false); }
+  }
+
   return <div className="admin-content settings-content">
     <div className="section-heading"><div><p className="eyebrow">{isNew ? "Nova jornada" : "Gestió independent de la jornada"}</p><h1 className="display">{isNew ? "Crea una jornada" : event?.name}</h1>{event && <p className="crm-filter-summary">Dates, premis, estat i enllaços propis d&apos;aquesta jornada</p>}</div><button className="button secondary small" onClick={onCancel}>Tornar</button></div>
     <form className="settings-form card" onSubmit={submit}>
@@ -163,6 +173,7 @@ function SettingsTab({ event, onCancel, onSaved, setMessage }: { event?: AdminEv
       {event && <div className="verification-box"><strong>Compromís criptogràfic</strong><code>{event.draw_seed_commitment}</code><small>La llavor es revela en finalitzar la jornada per verificar les extraccions.</small></div>}
       <div className="settings-actions"><button className="button yellow" disabled={busy}>{busy ? <LoaderCircle className="spin" /> : <Check />} Desa la configuració</button></div>
     </form>
+    {event && <section className="danger-zone"><div><strong>Elimina la jornada</strong><p>Només es pot eliminar si encara no té participacions. Les jornades amb historial s&apos;han de finalitzar.</p></div><button className="button danger small" type="button" disabled={busy} onClick={remove}><Trash2 size={16} /> Elimina</button></section>}
   </div>;
 }
 
