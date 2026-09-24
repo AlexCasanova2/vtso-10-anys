@@ -2,23 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowRight, Users } from "lucide-react";
-import type { PublicEvent } from "@/lib/types";
-import { formatNumber } from "@/lib/types";
+import { usePublicEvent } from "@/components/use-public-event";
 import { Brand } from "@/components/brand";
-
-function useEvent() {
-  const [event, setEvent] = useState<PublicEvent | null>();
-  useEffect(() => {
-    let active = true;
-    const load = () => fetch("/api/public/event", { cache: "no-store" }).then((res) => res.json()).then((body) => active && setEvent(body.event)).catch(() => active && setEvent(null));
-    load();
-    const timer = window.setInterval(load, 3000);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
-  return event;
-}
 
 function Countdown({ target }: { target: string }) {
   const [now, setNow] = useState(() => Date.now());
@@ -28,36 +16,26 @@ function Countdown({ target }: { target: string }) {
   return <div className="countdown">{parts.map((part, index) => <div key={index}><strong>{String(part).padStart(2, "0")}</strong><span>{["dies", "hores", "min", "seg"][index]}</span></div>)}</div>;
 }
 
-function AnimatedDraw({ number, position, total }: { number: number; position: number; total: number }) {
-  const [displayedNumber, setDisplayedNumber] = useState(number);
-  const [revealing, setRevealing] = useState(true);
-
-  useEffect(() => {
-    const roller = window.setInterval(() => setDisplayedNumber(Math.floor(Math.random() * 1000)), 70);
-    const finish = window.setTimeout(() => {
-      window.clearInterval(roller);
-      setDisplayedNumber(number);
-      setRevealing(false);
-    }, 1800);
-    return () => { window.clearInterval(roller); window.clearTimeout(finish); };
-  }, [number]);
-
-  return <div className={`draw-reveal ${revealing ? "is-revealing" : "is-revealed"}`}>
-    <div className="draw-burst" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div>
-    <span className="draw-progress">Número {position} de {total}</span>
-    <strong aria-live="polite" aria-label={revealing ? "Extraient número" : `Número extret ${formatNumber(number)}`}>{formatNumber(displayedNumber)}</strong>
-    <small>{revealing ? "La sort està girant" : "Número guanyador"}</small>
-  </div>;
-}
-
 export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: boolean; baseUrl: string }) {
-  const event = useEvent();
+  const event = usePublicEvent();
+  const router = useRouter();
+  useEffect(() => {
+    if (!event || event.status === "completed") return;
+    const destination = `/sorteig?jornada=${encodeURIComponent(event.id)}`;
+    router.prefetch(destination);
+    const remaining = new Date(event.starts_at).getTime() - Date.now();
+    if (event.status === "drawing" || remaining <= 0) {
+      router.replace(destination);
+      return;
+    }
+    const timer = setTimeout(() => router.replace(destination), Math.min(remaining, 2147483647));
+    return () => clearTimeout(timer);
+  }, [event, router]);
 
   if (event === undefined) return <main className="event-shell loading">Preparant la celebració…</main>;
   if (!event) return <main className="event-shell empty"><Brand /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p><Link className="button" href="/admin">Administració</Link></main>;
 
   const open = new Date() >= new Date(event.registration_opens_at) && new Date() < new Date(event.registration_closes_at) && ["scheduled", "registration_open"].includes(event.status);
-  const currentDraw = event.status === "drawing" ? event.current_draw : null;
 
   return (
     <main className={`event-shell ${displayMode ? "display-mode" : ""}`}>
@@ -68,11 +46,7 @@ export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: bo
           <p className="eyebrow">Fem 10 anys</p>
           <h1 className="display">Regalem<br /><mark>10.000 €</mark></h1>
           <p className="event-message">{event.public_message || "40 premis de 250 €. Serà teu?"}</p>
-          {currentDraw ? (
-            <AnimatedDraw key={currentDraw.number} number={currentDraw.number} position={currentDraw.position} total={event.prize_count} />
-          ) : (
-            <><p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><Countdown target={event.starts_at} /></>
-          )}
+          <p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><Countdown target={event.starts_at} />
         </div>
         <aside className="join-card">
           <div className="qr-wrap">{baseUrl && <QRCodeSVG value={`${baseUrl}/registro?jornada=${event.id}`} size={190} level="M" />}</div>
