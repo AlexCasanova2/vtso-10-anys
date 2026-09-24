@@ -28,6 +28,28 @@ function Countdown({ target }: { target: string }) {
   return <div className="countdown">{parts.map((part, index) => <div key={index}><strong>{String(part).padStart(2, "0")}</strong><span>{["dies", "hores", "min", "seg"][index]}</span></div>)}</div>;
 }
 
+function AnimatedDraw({ number, position, total }: { number: number; position: number; total: number }) {
+  const [displayedNumber, setDisplayedNumber] = useState(number);
+  const [revealing, setRevealing] = useState(true);
+
+  useEffect(() => {
+    const roller = window.setInterval(() => setDisplayedNumber(Math.floor(Math.random() * 1000)), 70);
+    const finish = window.setTimeout(() => {
+      window.clearInterval(roller);
+      setDisplayedNumber(number);
+      setRevealing(false);
+    }, 1800);
+    return () => { window.clearInterval(roller); window.clearTimeout(finish); };
+  }, [number]);
+
+  return <div className={`draw-reveal ${revealing ? "is-revealing" : "is-revealed"}`}>
+    <div className="draw-burst" aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div>
+    <span className="draw-progress">Número {position} de {total}</span>
+    <strong aria-live="polite" aria-label={revealing ? "Extraient número" : `Número extret ${formatNumber(number)}`}>{formatNumber(displayedNumber)}</strong>
+    <small>{revealing ? "La sort està girant" : "Número guanyador"}</small>
+  </div>;
+}
+
 export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: boolean; baseUrl: string }) {
   const event = useEvent();
 
@@ -35,8 +57,7 @@ export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: bo
   if (!event) return <main className="event-shell empty"><Brand /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p><Link className="button" href="/admin">Administració</Link></main>;
 
   const open = new Date() >= new Date(event.registration_opens_at) && new Date() < new Date(event.registration_closes_at) && ["scheduled", "registration_open"].includes(event.status);
-  const liveNumber = event.pending_draw?.number ?? event.last_awarded?.number;
-  const drawing = event.status === "drawing" && liveNumber !== undefined;
+  const currentDraw = event.status === "drawing" ? event.current_draw : null;
 
   return (
     <main className={`event-shell ${displayMode ? "display-mode" : ""}`}>
@@ -47,8 +68,8 @@ export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: bo
           <p className="eyebrow">Fem 10 anys</p>
           <h1 className="display">Regalem<br /><mark>10.000 €</mark></h1>
           <p className="event-message">{event.public_message || "40 premis de 250 €. Serà teu?"}</p>
-          {drawing ? (
-            <div className="winner-callout"><span>{event.pending_draw ? "Número extret" : "Últim guanyador"}</span><strong>{formatNumber(liveNumber)}</strong>{event.pending_draw && <small>Comprovant la presència</small>}</div>
+          {currentDraw ? (
+            <AnimatedDraw key={currentDraw.number} number={currentDraw.number} position={currentDraw.position} total={event.prize_count} />
           ) : (
             <><p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><Countdown target={event.starts_at} /></>
           )}

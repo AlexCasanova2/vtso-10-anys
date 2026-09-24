@@ -20,9 +20,8 @@ export type EventDay = {
 
 export type PublicEvent = EventDay & {
   participant_count: number;
-  awarded_count: number;
-  pending_draw?: { number: number; drawn_at: string } | null;
-  last_awarded?: { number: number; drawn_at: string } | null;
+  revealed_count: number;
+  current_draw?: { number: number; position: number; revealed_at: string } | null;
 };
 
 export type Entry = {

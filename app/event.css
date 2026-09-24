@@ -31,9 +31,19 @@
 .participant-stat span { font-size:.78rem; color:var(--muted); }
 .join-card .button { width:100%; }
 .closed-note { font-size:.85rem; font-weight:700; }
-.winner-callout { display:inline-grid; margin-top:2.5rem; padding:20px 36px; background:var(--white); border:0; border-radius:15px; box-shadow:0 18px 55px rgba(0,0,0,.2); text-align:center; animation:winner-glow 1.8s ease-in-out infinite; }
-.winner-callout span,.winner-callout small { font-weight:800; text-transform:uppercase; letter-spacing:.1em; }
-.winner-callout strong { font:800 clamp(5rem,11vw,10rem)/1 var(--font-display); }
+.draw-reveal { position:relative; isolation:isolate; display:inline-grid; min-width:min(430px,100%); justify-items:center; margin-top:2.5rem; overflow:visible; border-radius:24px; padding:24px 42px 20px; background:var(--ink); color:white; box-shadow:0 24px 65px rgba(0,0,0,.25); text-align:center; }
+.draw-reveal::before { position:absolute; z-index:-1; inset:8px; border:1px solid rgba(255,237,0,.55); border-radius:18px; content:""; }
+.draw-reveal span,.draw-reveal small { font-weight:900; text-transform:uppercase; letter-spacing:.14em; }
+.draw-reveal span { color:var(--yellow); font-size:.7rem; }
+.draw-reveal small { font-size:.72rem; }
+.draw-reveal strong { min-width:3.2ch; color:white; font:800 clamp(6rem,12vw,11rem)/.88 var(--font-display); letter-spacing:-.06em; font-variant-numeric:tabular-nums; }
+.draw-reveal.is-revealing strong { animation:number-roll .14s linear infinite; filter:blur(1.5px); }
+.draw-reveal.is-revealed { animation:reveal-impact .7s cubic-bezier(.2,.9,.2,1),winner-glow 2.2s .7s ease-in-out infinite; }
+.draw-burst { position:absolute; z-index:-2; inset:50%; pointer-events:none; }
+.draw-burst i { --angle:calc(var(--i) * 30deg); position:absolute; width:9px; height:24px; border-radius:99px; background:var(--green); opacity:0; transform:rotate(var(--angle)) translateY(-40px); }
+.draw-burst i:nth-child(3n+2) { background:#e75294; }.draw-burst i:nth-child(3n) { background:#fff; }
+.draw-burst i:nth-child(1) { --i:0; }.draw-burst i:nth-child(2) { --i:1; }.draw-burst i:nth-child(3) { --i:2; }.draw-burst i:nth-child(4) { --i:3; }.draw-burst i:nth-child(5) { --i:4; }.draw-burst i:nth-child(6) { --i:5; }.draw-burst i:nth-child(7) { --i:6; }.draw-burst i:nth-child(8) { --i:7; }.draw-burst i:nth-child(9) { --i:8; }.draw-burst i:nth-child(10) { --i:9; }.draw-burst i:nth-child(11) { --i:10; }.draw-burst i:nth-child(12) { --i:11; }
+.draw-reveal.is-revealed .draw-burst i { animation:burst 1s ease-out both; }
 .event-ticker { position:relative; z-index:2; width:calc(100% + clamp(40px,8vw,128px)); margin-left:calc(clamp(20px,4vw,64px) * -1); overflow:hidden; border-block:1px solid var(--ink); padding:8px 0; background:var(--ink); color:var(--yellow); font:800 .72rem var(--font-display); letter-spacing:.13em; white-space:nowrap; }
 .ticker-track { display:flex; width:max-content; animation:ticker-move 20s linear infinite; will-change:transform; }
 .ticker-group { display:flex; width:100vw; flex:none; align-items:center; justify-content:space-around; gap:2.2rem; padding:0 1.1rem; }
@@ -47,11 +57,15 @@
 @keyframes card-float { 0%,100% { transform:translateY(-4px); } 50% { transform:translateY(5px); } }
 @keyframes ten-breathe { 0%,100% { transform:scale(.97) rotate(-2deg); } 50% { transform:scale(1.03) rotate(1deg); } }
 @keyframes winner-glow { 0%,100% { box-shadow:0 18px 55px rgba(0,0,0,.2); } 50% { box-shadow:0 18px 55px rgba(0,0,0,.2),0 0 0 10px rgba(255,255,255,.2); } }
+@keyframes number-roll { 50% { transform:translateY(4px) skewX(-4deg); opacity:.72; } }
+@keyframes reveal-impact { 0% { transform:scale(.72) rotate(-3deg); opacity:.2; } 65% { transform:scale(1.06) rotate(1deg); } 100% { transform:scale(1); opacity:1; } }
+@keyframes burst { 0% { opacity:1; transform:rotate(var(--angle)) translateY(-60px) scale(.4); } 100% { opacity:0; transform:rotate(var(--angle)) translateY(-240px) scale(1.2); } }
 @keyframes ticker-move { to { transform:translateX(-50%); } }
 @media (max-width:800px) {
   .event-shell { background-image:radial-gradient(circle at 90% 10%,rgba(255,255,255,.5),transparent 20%); }
   .event-hero { grid-template-columns:1fr; padding:60px 0; }
   .join-card { box-shadow:0 18px 45px rgba(0,0,0,.17); }
+  .draw-reveal { min-width:100%; padding-inline:20px; }
   .qr-wrap { display:none; }
   .event-shell footer { flex-wrap:wrap; }
 }

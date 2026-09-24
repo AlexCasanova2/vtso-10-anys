@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPastEventDay, reconcileEventStatuses } from "@/lib/event-status";
+import { getDrawState } from "@/lib/draw-sequence";
 import type { EventDay } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -35,13 +36,10 @@ async function getEvent(request: Request) {
 }
 
 async function eventResponse(supabase: ReturnType<typeof createAdminClient>, rawEvent: EventDay) {
-  const [entries, awarded, pending, lastAwarded] = await Promise.all([
+  const [entries, drawState] = await Promise.all([
     supabase.from("entries").select("id", { count: "exact", head: true }).eq("event_id", rawEvent.id),
-    supabase.from("draws").select("id", { count: "exact", head: true }).eq("event_id", rawEvent.id).eq("status", "awarded"),
-    supabase.from("draws").select("drawn_at, entries(number)").eq("event_id", rawEvent.id).eq("status", "pending").maybeSingle(),
-    supabase.from("draws").select("drawn_at, entries(number)").eq("event_id", rawEvent.id).eq("status", "awarded").order("drawn_at", { ascending: false }).limit(1).maybeSingle(),
+    getDrawState(supabase, rawEvent.id),
   ]);
 
-  const flattenDraw = (draw: typeof pending.data) => draw ? { drawn_at: draw.drawn_at, number: (draw.entries as unknown as { number: number }).number } : null;
-  return NextResponse.json({ event: { ...rawEvent, participant_count: entries.count ?? 0, awarded_count: awarded.count ?? 0, pending_draw: flattenDraw(pending.data), last_awarded: flattenDraw(lastAwarded.data) } }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ event: { ...rawEvent, participant_count: entries.count ?? 0, ...drawState } }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureDrawSequence } from "@/lib/draw-sequence";
 
 const dateKey = (value: string | Date) => new Intl.DateTimeFormat("en-CA", {
   timeZone: "Europe/Madrid",
@@ -15,7 +16,7 @@ export async function reconcileEventStatuses(now = new Date()) {
   const supabase = createAdminClient();
   const { data: events, error } = await supabase
     .from("events")
-    .select("id,starts_at,registration_opens_at,registration_closes_at,status,assignment_seed,draw_seed")
+    .select("id,starts_at,registration_opens_at,registration_closes_at,status,assignment_seed,draw_seed,prize_count,updated_at")
     .not("status", "in", "(draft,completed)");
 
   if (error || !events) return;
@@ -43,10 +44,12 @@ export async function reconcileEventStatuses(now = new Date()) {
 
       if (startError || !started) return;
 
-      const { error: drawError } = await supabase.rpc("draw_next", { p_event_id: event.id, p_actor_id: null });
-      if (drawError && !drawError.message.includes("NO_ELIGIBLE_ENTRIES")) {
-        console.error(`Automatic first draw failed for event ${event.id}`, drawError);
-      }
+      await ensureDrawSequence(supabase, { ...event, status: "drawing", updated_at: nowIso }, true);
+      return;
+    }
+
+    if (event.status === "drawing") {
+      await ensureDrawSequence(supabase, event);
       return;
     }
 
