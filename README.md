@@ -9,7 +9,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 - Tarjeta por correo transaccional mediante Brevo.
 - Pantalla pública en tiempo real con QR, contador, cuenta atrás y número extraído.
 - Administración optimizada para tablet: búsqueda, corrección de correo y reenvío.
-- Secuencia de números ganadores preparada al inicio y revelada uno a uno desde administración.
+- Secuencia de números inscritos preparada al inicio, revelada uno a uno y repetición de ronda si el ganador no está presente, con histórico por jornada.
 - CRM con histórico separado por jornada y exportación CSV.
 - Auditoría de cambios y publicación de semillas al finalizar la jornada.
 
@@ -27,14 +27,15 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 
 Al crear una jornada, el servidor genera dos semillas independientes de 256 bits: una para asignaciones y otra para extracciones. Antes de empezar se publica en la configuración el SHA-256 de la semilla de extracciones.
 
-La asignación calcula `HMAC-SHA256(semilla, tipo_documento:documento:país)`, obtiene un índice mediante rejection sampling sin sesgo modular y recorre circularmente el pool hasta encontrar un número libre. Al comenzar el sorteo se genera, con la semilla independiente de extracciones, una secuencia sin repeticiones sobre el rango completo `000-999`; no depende de los números que se hayan asignado a participantes. La secuencia queda registrada en el servidor y cada revelación posterior se audita por separado.
+La asignación calcula `HMAC-SHA256(semilla, tipo_documento:documento:país)`, obtiene un índice mediante rejection sampling sin sesgo modular y recorre circularmente el pool hasta encontrar un número libre. Al comenzar el sorteo se genera, con la semilla independiente de extracciones, una secuencia sin repeticiones entre los números inscritos. La secuencia queda registrada en el servidor y cada revelación posterior se audita por separado.
 
 Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el listado ordenado de participaciones y el histórico de extracciones se puede reproducir y contrastar con los compromisos publicados. La explicación definitiva debe incorporarse a las bases legales y ser revisada jurídicamente.
 
 ## Operación del evento
 
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
-- A la hora programada se selecciona una secuencia única de números entre `000` y `999`, independientemente de los números asignados a participantes.
+- A la hora programada se selecciona una secuencia única entre los números asignados a participantes. Si no hay inscripciones, no se extrae ningún número.
 - El primer número se revela automáticamente y los siguientes permanecen ocultos.
 - Cada número posterior se revela desde el panel con el botón `Extreure un nou número`.
+- Si la persona no está presente, `Tornar a sortejar aquesta ronda` registra el intento como ausente y extrae otro participante para el mismo premio; el histórico de la jornada conserva ambos números.
 - Al entregar todos los premios, marca la jornada como `Finalizada` para revelar las semillas de verificación.

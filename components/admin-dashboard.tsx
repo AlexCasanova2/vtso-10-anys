@@ -2,7 +2,7 @@
 
 import { FormEvent, startTransition, useDeferredValue, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Check, ChevronRight, CircleDollarSign, Download, ExternalLink, Gift, LayoutDashboard, LoaderCircle, LogOut, Mail, Pencil, Plus, Search, Settings, TicketCheck, Trash2, UserRound, Users, X } from "lucide-react";
+import { CalendarClock, Check, ChevronRight, CircleDollarSign, Download, ExternalLink, Gift, LayoutDashboard, LoaderCircle, LogOut, Mail, Pencil, Plus, RotateCcw, Search, Settings, TicketCheck, Trash2, UserRound, Users, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { formatMoney, formatNumber, type EventDay, type PublicEvent } from "@/lib/types";
 import { Brand } from "@/components/brand";
@@ -11,6 +11,7 @@ type User = { id: string; full_name: string; role: "admin" | "operator"; email: 
 type AdminEvent = EventDay & { entries: { count: number }[]; draws: { count: number }[] };
 type AdminEntry = { id: string; number: number; created_at: string; email_snapshot: string; participants: { id: string; first_name: string; last_name: string; email: string; document_type: string; document_number: string; document_country: string }; email_deliveries: { status: string; created_at: string }[] };
 type CrmParticipant = { id: string; first_name: string; last_name: string; email: string; document_type: string; document_number: string; document_country: string; entries: { id: string; number: number; created_at: string; events: { id: string; name: string }; draws: { status: string }[] }[] };
+type DrawHistory = { number: number; position: number; revealed_at: string; status: "awarded" | "absent" };
 type Tab = "event" | "people" | "settings";
 
 const statusLabels: Record<string, string> = { draft: "Esborrany", scheduled: "Programada", registration_open: "Inscripció oberta", registration_closed: "Inscripció tancada", drawing: "En sorteig", completed: "Finalitzada" };
@@ -36,6 +37,7 @@ export function AdminDashboard({ user }: { user: User }) {
   const deferredSearch = useDeferredValue(search);
   const [selected, setSelected] = useState<AdminEntry | null>(null);
   const [publicEvent, setPublicEvent] = useState<PublicEvent | null>(null);
+  const [drawHistory, setDrawHistory] = useState<DrawHistory[]>([]);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -68,13 +70,16 @@ export function AdminDashboard({ user }: { user: User }) {
   useEffect(() => {
     if (!eventId) return;
     let active = true;
+    setPublicEvent(null);
+    setDrawHistory([]);
     const loadLiveEvent = () => request(`/api/public/event?id=${eventId}`).then((body) => {
       if (!active) return;
       setPublicEvent(body.event);
       if (body.event) setEvents((currentEvents) => currentEvents.map((event) => event.id === eventId ? { ...event, status: body.event.status } : event));
     }).catch((error) => active && setMessage({ type: "error", text: error.message }));
-    loadLiveEvent();
-    const timer = window.setInterval(loadLiveEvent, 3000);
+    const loadHistory = () => request(`/api/admin/draws?eventId=${eventId}`).then((body) => active && setDrawHistory(body.draws)).catch((error) => active && setMessage({ type: "error", text: error.message }));
+    loadLiveEvent(); loadHistory();
+    const timer = window.setInterval(() => { loadLiveEvent(); loadHistory(); }, 3000);
     return () => { active = false; window.clearInterval(timer); };
   }, [eventId]);
   useEffect(() => {
@@ -83,14 +88,15 @@ export function AdminDashboard({ user }: { user: User }) {
     request(`/api/admin/participants${query}`).then((body) => setParticipants(body.participants)).catch((error) => setMessage({ type: "error", text: error.message }));
   }, [tab, deferredSearch]);
 
-  async function draw() {
+  async function draw(action: "extract" | "redraw") {
     if (!eventId) return;
+    if (action === "redraw" && !window.confirm("La persona del número actual no és present? Es marcarà com a absent i se sortejarà un altre número per al mateix premi.")) return;
     setBusy(true); setMessage(null);
     try {
-      await request("/api/admin/draws", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ eventId, action: "extract" }) });
-      const eventBody = await request(`/api/public/event?id=${eventId}`);
-      setPublicEvent(eventBody.event); await loadEvents(eventId);
-      setMessage({ type: "success", text: "Nou número extret" });
+      await request("/api/admin/draws", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ eventId, action }) });
+      const [eventBody, historyBody] = await Promise.all([request(`/api/public/event?id=${eventId}`), request(`/api/admin/draws?eventId=${eventId}`)]);
+      setPublicEvent(eventBody.event); setDrawHistory(historyBody.draws); await loadEvents(eventId);
+      setMessage({ type: "success", text: action === "redraw" ? "Número anterior marcat com a absent. Nou número extret per al mateix premi." : "Nou número extret" });
     } catch (error) { setMessage({ type: "error", text: (error as Error).message }); } finally { setBusy(false); }
   }
 
@@ -106,19 +112,20 @@ export function AdminDashboard({ user }: { user: User }) {
     <section className="admin-main">
       <header className="admin-topbar"><div><p className="eyebrow">Tauler de control</p><select value={eventId} onChange={(e) => setEventId(e.target.value)}>{events.map((event) => <option key={event.id} value={event.id}>{event.name}</option>)}</select></div><div className="top-actions"><a className="button secondary small" href="/pantalla" target="_blank">Pantalla pública <ExternalLink size={15} /></a>{user.role === "admin" && <button className="button yellow small" onClick={() => { setCreating(true); setTab("settings"); }}><Plus size={16} /> Nova jornada</button>}</div></header>
       {message && <div className={`admin-message ${message.type}`}><span>{message.text}</span><button onClick={() => setMessage(null)}><X size={16} /></button></div>}
-      {tab === "event" && <EventTab event={current} live={publicEvent} entries={entries} search={search} setSearch={setSearch} selected={selected} setSelected={setSelected} busy={busy} draw={draw} exportEntries={exportEntries} onChanged={() => { setSelected(null); loadEvents(eventId); }} setMessage={setMessage} />}
+      {tab === "event" && <EventTab event={current} live={publicEvent} history={drawHistory} entries={entries} search={search} setSearch={setSearch} selected={selected} setSelected={setSelected} busy={busy} draw={draw} exportEntries={exportEntries} onChanged={() => { setSelected(null); loadEvents(eventId); }} setMessage={setMessage} />}
       {tab === "people" && <PeopleTab participants={participants} search={search} setSearch={setSearch} event={events.find((event) => event.id === crmEventId)} canConfigure={user.role === "admin"} onConfigure={() => { if (crmEventId !== "all") { setEventId(crmEventId); setCreating(false); setTab("settings"); } }} />}
       {tab === "settings" && user.role === "admin" && <SettingsTab key={creating ? "new" : current?.id} event={creating ? undefined : current} onCancel={() => { setCreating(false); setTab(current ? "people" : "event"); }} onSaved={(id) => { setCreating(false); setCrmEventId(id); loadEvents(id); setTab("people"); setMessage({ type: "success", text: "Configuració desada" }); }} onDeleted={() => { setCreating(false); setCrmEventId("all"); loadEvents(); setTab("people"); setMessage({ type: "success", text: "Jornada eliminada" }); }} setMessage={setMessage} />}
     </section>
   </main>;
 }
 
-function EventTab({ event, live, entries, search, setSearch, selected, setSelected, busy, draw, exportEntries, onChanged, setMessage }: { event?: AdminEvent; live: PublicEvent | null; entries: AdminEntry[]; search: string; setSearch: (v: string) => void; selected: AdminEntry | null; setSelected: (v: AdminEntry | null) => void; busy: boolean; draw: () => void; exportEntries: () => void; onChanged: () => void; setMessage: (v: { type: "error" | "success"; text: string }) => void }) {
+function EventTab({ event, live, history, entries, search, setSearch, selected, setSelected, busy, draw, exportEntries, onChanged, setMessage }: { event?: AdminEvent; live: PublicEvent | null; history: DrawHistory[]; entries: AdminEntry[]; search: string; setSearch: (v: string) => void; selected: AdminEntry | null; setSelected: (v: AdminEntry | null) => void; busy: boolean; draw: (action: "extract" | "redraw") => void; exportEntries: () => void; onChanged: () => void; setMessage: (v: { type: "error" | "success"; text: string }) => void }) {
   if (!event) return <EmptyAdmin />;
   return <div className="admin-content">
     <div className="operational-intro"><div><p className="eyebrow">Operativa de la jornada</p><h1 className="display">Sorteig en directe</h1></div><p>El primer número apareix automàticament. Des d&apos;aquí controles quan es revela cadascun dels números següents.</p></div>
     <div className="stats"><Stat icon={<Users />} label="Participants" value={String(live?.participant_count ?? 0)} detail={`${1000 - (live?.participant_count ?? 0)} disponibles`} /><Stat icon={<Gift />} label="Números extrets" value={`${live?.revealed_count ?? 0}/${event.prize_count}`} detail={formatMoney(event.prize_value_cents) + " per número"} /><Stat icon={<CalendarClock />} label="Inici" value={new Intl.DateTimeFormat("ca-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(event.starts_at))} detail={new Intl.DateTimeFormat("ca-ES", { day: "2-digit", month: "long", timeZone: "Europe/Madrid" }).format(new Date(event.starts_at))} /><Stat icon={<CircleDollarSign />} label="Estat" value={statusLabels[event.status]} detail={`Tancament ${new Intl.DateTimeFormat("ca-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(event.registration_closes_at))}`} /></div>
-    {event.status === "drawing" && <section className="draw-console card"><div><p className="eyebrow">Sorteig en directe</p><h2 className="display">Número {live?.revealed_count ?? 0} de {event.prize_count}</h2></div>{live?.current_draw && <div className="pending-number"><small>Últim número extret</small><strong>{formatNumber(live.current_draw.number)}</strong></div>}<button className="extract-button" onClick={draw} disabled={busy || !live?.current_draw || live.revealed_count >= event.prize_count}>{busy ? <LoaderCircle className="spin" /> : <TicketCheck />} {live?.revealed_count === event.prize_count ? "Sorteig completat" : "Extreure un nou número"}</button></section>}
+    {event.status === "drawing" && <section className="draw-console card"><div><p className="eyebrow">Sorteig en directe</p><h2 className="display">Número {live?.revealed_count ?? 0} de {event.prize_count}</h2></div>{live?.current_draw && <div className="pending-number"><small>Últim número extret</small><strong>{formatNumber(live.current_draw.number)}</strong></div>}<div className="draw-actions"><button className="extract-button" onClick={() => draw("extract")} disabled={busy || !live?.current_draw || live.revealed_count >= event.prize_count}>{busy ? <LoaderCircle className="spin" /> : <TicketCheck />} {live?.revealed_count === event.prize_count ? "Sorteig completat" : "Extreure un nou número"}</button><button className="redraw-button" onClick={() => draw("redraw")} disabled={busy || !live?.current_draw} title="Marca el número actual com a absent i repeteix la ronda"><RotateCcw size={18} /> Tornar a sortejar aquesta ronda</button></div></section>}
+    <section className="draw-history card"><div><p className="eyebrow">Històric de la jornada</p><h2 className="display">Números premiats</h2></div>{history.length ? <ol>{[...history].reverse().map((draw, index) => <li key={`${draw.position}-${draw.revealed_at}-${index}`}><span>Premi {draw.position}</span><strong>{formatNumber(draw.number)}</strong><span>{draw.status === "absent" ? "No present" : index === 0 && event.status === "drawing" ? "Número actual" : "Premiat"}</span><time dateTime={draw.revealed_at}>{new Intl.DateTimeFormat("ca-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }).format(new Date(draw.revealed_at))}</time></li>)}</ol> : <p>Encara no s&apos;ha extret cap número en aquesta jornada.</p>}</section>
     <section className="participants-section"><div className="section-heading"><div><p className="eyebrow">Jornada actual</p><h2 className="display">Participants</h2></div><div className="table-actions"><label className="search-box"><Search size={18} /><input value={search} onChange={(e) => startTransition(() => setSearch(e.target.value))} placeholder="Nom, correu o document" /></label><button className="button secondary small" onClick={exportEntries}><Download size={16} /> CSV</button></div></div>
       <div className="participant-table"><div className="table-head"><span>Núm.</span><span>Participant</span><span>Document</span><span>Correu / enviament</span><span></span></div>{entries.length ? entries.map((entry) => { const lastDelivery = [...entry.email_deliveries].sort((a,b) => b.created_at.localeCompare(a.created_at))[0]; const deliveryStatus = lastDelivery?.status ?? "queued"; return <button className="table-row" key={entry.id} onClick={() => setSelected(entry)}><strong className="number-chip">{formatNumber(entry.number)}</strong><span><b>{entry.participants.first_name} {entry.participants.last_name}</b><small>{new Intl.DateTimeFormat("ca-ES", { hour:"2-digit",minute:"2-digit" }).format(new Date(entry.created_at))}</small></span><span>{entry.participants.document_type.toUpperCase()} · {entry.participants.document_number}</span><span><b>{entry.participants.email}</b><small className={`delivery ${deliveryStatus}`}>{deliveryLabels[deliveryStatus]}</small></span><ChevronRight /></button> }) : <div className="table-empty">No hi ha participants que coincideixin amb la cerca.</div>}</div>
     </section>
