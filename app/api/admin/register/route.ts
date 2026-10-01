@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { apiError, databaseMessage, requireApiAdmin } from "@/lib/api";
 import { sendTicketEmail } from "@/lib/brevo";
+import { newEmailTrackingId } from "@/lib/email-tracking";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { staffRegistrationSchema } from "@/lib/validation";
 import type { EventDay } from "@/lib/types";
@@ -39,17 +40,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ entryIds: entries.map((entry) => entry.entry_id), numbers, emailSent: false });
   }
   const { data: event } = await supabase.from("events").select("*").eq("id", values.eventId).single();
+  const trackingId = newEmailTrackingId();
   const { data: deliveries, error: deliveryError } = await supabase.from("email_deliveries")
-    .insert(allEntries.map((entry) => ({ entry_id: entry.id, recipient: values.email, status: "queued" }))).select("id");
+    .insert(allEntries.map((entry) => ({ entry_id: entry.id, recipient: values.email, provider_id: trackingId, status: "queued" }))).select("id");
   if (deliveryError) console.error("No s'han pogut crear els registres d'enviament", deliveryError);
 
   let emailSent = false;
   try {
-    const sent = await sendTicketEmail({ to: values.email, firstName: values.firstName, numbers: allEntries.map((entry) => entry.number), event: event as EventDay });
+    await sendTicketEmail({ to: values.email, firstName: values.firstName, numbers: allEntries.map((entry) => entry.number), event: event as EventDay, trackingId });
     emailSent = true;
-    if (deliveries?.length) await supabase.from("email_deliveries").update({ status: "sent", provider_id: sent.messageId, updated_at: new Date().toISOString() }).in("id", deliveries.map((delivery) => delivery.id));
+    if (deliveries?.length) await supabase.from("email_deliveries").update({ status: "sent", updated_at: new Date().toISOString() }).in("id", deliveries.map((delivery) => delivery.id)).eq("status", "queued");
   } catch (emailError) {
-    if (deliveries?.length) await supabase.from("email_deliveries").update({ status: "failed", error: emailError instanceof Error ? emailError.message : "Error desconegut", updated_at: new Date().toISOString() }).in("id", deliveries.map((delivery) => delivery.id));
+    if (deliveries?.length) await supabase.from("email_deliveries").update({ status: "failed", error: emailError instanceof Error ? emailError.message : "Error desconegut", updated_at: new Date().toISOString() }).in("id", deliveries.map((delivery) => delivery.id)).eq("status", "queued");
   }
 
   await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "ticket.registered", entity_type: "entry", entity_id: entries[0].entry_id, payload: { event_id: values.eventId, ticket_code: values.ticketCode, amount_cents: values.amountCents, numbers, email_sent: emailSent } });

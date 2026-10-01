@@ -23,6 +23,12 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 6. Crea el usuario inicial desde Supabase Authentication y asígnale un perfil ejecutando `insert into public.profiles (id, full_name, role) values ('ID_DEL_USUARIO', 'Nombre', 'admin');` en el editor SQL. Para personal de incidencias utiliza el rol `operator`.
 7. Configura en Brevo el webhook `https://tu-dominio/api/webhooks/brevo` y añade la cabecera `x-webhook-secret` con el valor de `BREVO_WEBHOOK_SECRET`.
 
+### Correo transaccional
+
+El envío utiliza el relay SMTP de Brevo por el puerto 587 con STARTTLS. Configura `BREVO_SMTP_LOGIN` (usuario SMTP de Brevo), `BREVO_SMTP_KEY` (clave SMTP, no la clave API), `BREVO_SENDER_EMAIL` (remitente verificado) y `BREVO_SENDER_NAME` como secretos del servidor en Vercel para el entorno de producción. No publiques las claves en el repositorio ni las compartas por chat. El bloqueo de IP para claves API puede seguir activado si las conexiones SMTP están permitidas en Brevo.
+
+Después de desplegar, comprueba que `/api/health` muestra `configured.brevo: true` y prueba un reenvío controlado a un buzón autorizado. Verifica la recepción y que el webhook actualiza el estado a `delivered`; la aceptación SMTP solo indica que Brevo recibió el mensaje. Si el webhook no incluye `X-Mailin-custom`, el estado de los nuevos envíos no podrá asociarse automáticamente y habrá que revisar su configuración en Brevo.
+
 ## Aleatoriedad verificable
 
 Al crear una jornada, el servidor genera dos semillas independientes de 256 bits: una para asignaciones y otra para extracciones. Antes de empezar se publica en la configuración el SHA-256 de la semilla de extracciones.

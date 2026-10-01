@@ -11,7 +11,7 @@ export async function GET() {
     supabaseUrl: Boolean(url),
     anonKey: Boolean(anonKey),
     serviceRoleKey: Boolean(serviceKey),
-    brevo: Boolean(process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL),
+    brevo: Boolean(process.env.BREVO_SMTP_LOGIN && process.env.BREVO_SMTP_KEY && process.env.BREVO_SENDER_EMAIL),
   };
 
   if (!url || !serviceKey) {
