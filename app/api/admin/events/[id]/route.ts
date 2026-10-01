@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { apiError, requireApiAdmin } from "@/lib/api";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { eventSchema } from "@/lib/validation";
+import { z } from "zod";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAdmin("admin");
@@ -33,16 +34,11 @@ export async function DELETE(_: Request, context: { params: Promise<{ id: string
   const auth = await requireApiAdmin("admin");
   if (auth.error) return auth.error;
   const { id } = await context.params;
+  if (!z.uuid().safeParse(id).success) return apiError("Jornada no vàlida");
   const supabase = createAdminClient();
-  const [{ data: event }, entries] = await Promise.all([
-    supabase.from("events").select("name").eq("id", id).maybeSingle(),
-    supabase.from("entries").select("id", { count: "exact", head: true }).eq("event_id", id),
-  ]);
-  if (!event) return apiError("No s'ha trobat la jornada", 404);
-  if ((entries.count ?? 0) > 0) return apiError("No es pot eliminar una jornada que ja té participacions. Finalitza-la per conservar-ne l'històric.", 409);
-
-  const { error } = await supabase.from("events").delete().eq("id", id);
-  if (error) return apiError("No s'ha pogut eliminar la jornada", 500);
-  await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "event.deleted", entity_type: "event", entity_id: id, payload: { name: event.name } });
+  const { error } = await supabase.rpc("delete_event_with_data", { p_event_id: id, p_actor_id: auth.user.id });
+  if (error?.message.includes("EVENT_NOT_FOUND")) return apiError("No s'ha trobat la jornada", 404);
+  if (error?.message.includes("EVENT_NOT_COMPLETED")) return apiError("Finalitza la jornada abans d'eliminar-ne les dades", 409);
+  if (error) return apiError("No s'ha pogut eliminar la jornada i les seves dades", 500);
   return NextResponse.json({ ok: true });
 }

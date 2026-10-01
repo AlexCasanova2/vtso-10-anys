@@ -208,7 +208,7 @@ function SettingsTab({ event, onCancel, onSaved, onDeleted, setMessage }: { even
   }
 
   async function remove() {
-    if (!event || !window.confirm(`Vols eliminar definitivament la jornada “${event.name}”?`)) return;
+    if (!event || !window.confirm(`Vols eliminar definitivament la jornada “${event.name}”? S'esborraran els tiquets, les participacions, els correus, el sorteig i el seu històric. Aquesta acció no es pot desfer.`)) return;
     setBusy(true);
     try {
       await request(`/api/admin/events/${event.id}`, { method: "DELETE" });

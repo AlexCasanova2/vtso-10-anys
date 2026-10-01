@@ -16,7 +16,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 ## Puesta en marcha
 
 1. Crea un proyecto de Supabase en una región europea.
-2. Ejecuta `supabase/migrations/202609230001_initial.sql` y después `supabase/migrations/202610010001_staff_tickets.sql` desde el editor SQL (en instalaciones existentes, solo la segunda migración, antes de desplegar esta versión).
+2. Ejecuta `supabase/migrations/202609230001_initial.sql`, `supabase/migrations/202610010001_staff_tickets.sql` y `supabase/migrations/202610010002_delete_event_with_data.sql` en ese orden desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
 3. Copia `.env.example` a `.env.local` y completa las variables.
 4. Ejecuta `npm install` y `npm run dev`.
 5. Desactiva el alta pública de usuarios en Supabase Authentication.
@@ -47,3 +47,4 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 - Si la persona no está presente, `Tornar a sortejar aquesta ronda` registra el intento como ausente y extrae otro participante para el mismo premio; el histórico de la jornada conserva ambos números.
 - El administrador puede finalizar el sorteo con confirmación desde la operativa, incluso si quedan premios sin extraer. El formulario presencial desaparece al cerrar la inscripción y la pantalla pública pasa automáticamente a la cuenta atrás de la siguiente jornada o a «Próximamente» si no existe otra.
 - Al entregar todos los premios, marca la jornada como `Finalizada` para revelar las semillas de verificación.
+- Solo un administrador puede borrar una jornada con datos si está finalizada. Tras la confirmación, se eliminan en una transacción sus tickets, participaciones, extracciones, correos y auditorías asociadas; las personas compartidas con otras jornadas se conservan. Solo queda una constancia mínima de la eliminación. No se puede deshacer.
