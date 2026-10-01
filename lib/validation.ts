@@ -34,6 +34,11 @@ export const registrationSchema = z.object({
   }
 });
 
+export const staffRegistrationSchema = registrationSchema.extend({
+  ticketCode: z.string().trim().min(2).max(100),
+  amountCents: z.number().int().min(6000),
+});
+
 export const eventSchema = z.object({
   name: z.string().trim().min(3).max(100),
   startsAt: z.string().datetime(),

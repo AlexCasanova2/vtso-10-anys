@@ -9,16 +9,22 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
   if (auth.error) return auth.error;
   const { id } = await context.params;
   const supabase = createAdminClient();
-  const { data: entry } = await supabase.from("entries").select("id,number,email_snapshot,first_name_snapshot,events(*)").eq("id", id).single();
+  const { data: entry } = await supabase.from("entries").select("id,number,participant_id,event_id,email_snapshot,first_name_snapshot,events(*)").eq("id", id).single();
   if (!entry) return apiError("No s'ha trobat la participació", 404);
-  const { data: delivery } = await supabase.from("email_deliveries").insert({ entry_id: id, recipient: entry.email_snapshot, status: "queued" }).select("id").single();
+  const { data: related, error: relatedError } = await supabase.from("entries").select("id,number")
+    .eq("event_id", entry.event_id).eq("participant_id", entry.participant_id).order("created_at").range(0, 999);
+  if (relatedError || !related?.length) return apiError("No s'han pogut carregar els números del tiquet", 500);
+  const { data: deliveries, error: deliveryError } = await supabase.from("email_deliveries")
+    .insert(related.map((item) => ({ entry_id: item.id, recipient: entry.email_snapshot, status: "queued" }))).select("id");
+  if (deliveryError || !deliveries?.length) return apiError("No s'ha pogut preparar el reenviament", 500);
+  const deliveryIds = deliveries.map((delivery) => delivery.id);
   try {
-    const sent = await sendTicketEmail({ to: entry.email_snapshot, firstName: entry.first_name_snapshot, number: entry.number, event: entry.events as unknown as EventDay });
-    await supabase.from("email_deliveries").update({ status: "sent", provider_id: sent.messageId, updated_at: new Date().toISOString() }).eq("id", delivery!.id);
-    await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "entry.email_resent", entity_type: "entry", entity_id: id, payload: { recipient: entry.email_snapshot } });
+    const sent = await sendTicketEmail({ to: entry.email_snapshot, firstName: entry.first_name_snapshot, numbers: related.map((item) => item.number), event: entry.events as unknown as EventDay });
+    await supabase.from("email_deliveries").update({ status: "sent", provider_id: sent.messageId, updated_at: new Date().toISOString() }).in("id", deliveryIds);
+    await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "entry.email_resent", entity_type: "entry", entity_id: id, payload: { recipient: entry.email_snapshot, numbers: related.map((item) => item.number) } });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    await supabase.from("email_deliveries").update({ status: "failed", error: error instanceof Error ? error.message : "Error", updated_at: new Date().toISOString() }).eq("id", delivery!.id);
+    await supabase.from("email_deliveries").update({ status: "failed", error: error instanceof Error ? error.message : "Error", updated_at: new Date().toISOString() }).in("id", deliveryIds);
     return apiError("Brevo no ha pogut enviar el correu", 502);
   }
 }

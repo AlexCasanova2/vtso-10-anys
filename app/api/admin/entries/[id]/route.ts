@@ -13,11 +13,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const { id } = await context.params;
   const email = parsed.data.email.toLowerCase();
   const supabase = createAdminClient();
-  const { data: entry } = await supabase.from("entries").select("participant_id,email_snapshot").eq("id", id).single();
+  const { data: entry } = await supabase.from("entries").select("participant_id,event_id,email_snapshot").eq("id", id).single();
   if (!entry) return apiError("No s'ha trobat la participació", 404);
   const { error } = await supabase.from("participants").update({ email, updated_at: new Date().toISOString() }).eq("id", entry.participant_id);
   if (error) return apiError("No s'ha pogut actualitzar el correu", 500);
-  await supabase.from("entries").update({ email_snapshot: email }).eq("id", id);
+  await supabase.from("entries").update({ email_snapshot: email }).eq("participant_id", entry.participant_id).eq("event_id", entry.event_id);
   await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "entry.email_updated", entity_type: "entry", entity_id: id, payload: { before: entry.email_snapshot, after: email } });
   return NextResponse.json({ ok: true });
 }

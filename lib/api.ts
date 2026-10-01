@@ -17,6 +17,9 @@ export function databaseMessage(message: string) {
   if (message.includes("REGISTRATION_NOT_OPEN")) return "La inscripció encara no està oberta";
   if (message.includes("REGISTRATION_CLOSED")) return "La inscripció per a aquesta jornada està tancada";
   if (message.includes("EVENT_FULL")) return "S'han assignat els 1.000 números disponibles";
+  if (message.includes("TICKET_ALREADY_USED")) return "Aquest tiquet ja s'ha registrat en aquesta jornada";
+  if (message.includes("AMOUNT_TOO_LOW")) return "El tiquet ha de ser d'almenys 60 €";
+  if (message.includes("INVALID_TICKET")) return "Introdueix una referència de tiquet vàlida";
   if (message.includes("PENDING_DRAW")) return "Has de resoldre l'extracció actual abans de continuar";
   if (message.includes("ALL_PRIZES_AWARDED")) return "Ja s'han lliurat tots els premis d'aquesta jornada";
   if (message.includes("NO_ELIGIBLE_ENTRIES")) return "No queden participacions disponibles";

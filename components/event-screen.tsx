@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react";
-import { ArrowRight, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { usePublicEvent } from "@/components/use-public-event";
 import { Brand } from "@/components/brand";
 
@@ -16,7 +15,7 @@ function Countdown({ target }: { target: string }) {
   return <div className="countdown">{parts.map((part, index) => <div key={index}><strong>{String(part).padStart(2, "0")}</strong><span>{["dies", "hores", "min", "seg"][index]}</span></div>)}</div>;
 }
 
-export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: boolean; baseUrl: string }) {
+export function EventScreen({ displayMode = false }: { displayMode?: boolean }) {
   const event = usePublicEvent();
   const router = useRouter();
   useEffect(() => {
@@ -49,10 +48,9 @@ export function EventScreen({ displayMode = false, baseUrl }: { displayMode?: bo
           <p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><Countdown target={event.starts_at} />
         </div>
         <aside className="join-card">
-          <div className="qr-wrap">{baseUrl && <QRCodeSVG value={`${baseUrl}/registro?jornada=${event.id}`} size={190} level="M" />}</div>
-          <h2 className="display">Escaneja.<br />Inscriu-t&apos;hi.<br />Participa.</h2>
-          <div className="participant-stat"><Users size={22} /><strong>{event.participant_count}</strong><span>participants avui</span></div>
-          {!displayMode && open && <Link className="button yellow" href={`/registro?jornada=${event.id}`}>Aconsegueix el teu número <ArrowRight size={18} /></Link>}
+          <h2 className="display">Presenta el tiquet.<br />Participa.</h2>
+          {open && <p>Inscripció presencial al punt d&apos;atenció. 60 €: 1 número · 80 €: 2 números · 100 € o més: 3 números.</p>}
+          <div className="participant-stat"><Users size={22} /><strong>{event.participant_count}</strong><span>números assignats avui</span></div>
           {!open && <p className="closed-note">La inscripció està tancada en aquest moment.</p>}
         </aside>
       </section>

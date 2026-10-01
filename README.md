@@ -4,10 +4,10 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 
 ## Funcionalidades
 
-- Inscripción pública con DNI, NIE o pasaporte y un máximo de 1.000 números únicos por jornada.
+- Inscripción presencial desde administración: el personal verifica el ticket físico (referencia e importe) y asigna 1 número desde 60 €, 2 desde 80 € o 3 desde 100 €, hasta 1.000 números únicos por jornada.
 - Asignación y extracciones deterministas a partir de semillas criptográficas secretas.
-- Tarjeta por correo transaccional mediante Brevo.
-- Pantalla pública en tiempo real con QR, contador, cuenta atrás y número extraído.
+- Un solo correo transaccional mediante Brevo con todos los números acumulados por persona y jornada (también al reenviar).
+- Pantalla pública en tiempo real con contador, cuenta atrás, indicaciones de inscripción presencial y número extraído.
 - Administración optimizada para tablet: búsqueda, corrección de correo y reenvío.
 - Secuencia de números inscritos preparada al inicio, revelada uno a uno y repetición de ronda si el ganador no está presente, con histórico por jornada.
 - CRM con histórico separado por jornada y exportación CSV.
@@ -16,7 +16,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 ## Puesta en marcha
 
 1. Crea un proyecto de Supabase en una región europea.
-2. Ejecuta `supabase/migrations/202609230001_initial.sql` desde el editor SQL.
+2. Ejecuta `supabase/migrations/202609230001_initial.sql` y después `supabase/migrations/202610010001_staff_tickets.sql` desde el editor SQL (en instalaciones existentes, solo la segunda migración, antes de desplegar esta versión).
 3. Copia `.env.example` a `.env.local` y completa las variables.
 4. Ejecuta `npm install` y `npm run dev`.
 5. Desactiva el alta pública de usuarios en Supabase Authentication.
@@ -34,6 +34,7 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 ## Operación del evento
 
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
+- El personal comprueba físicamente el ticket y registra su referencia única, el importe y los datos de la persona en el panel. No se asignan participaciones desde el enlace público; la referencia no puede utilizarse dos veces en una misma jornada.
 - A la hora programada se selecciona una secuencia única entre los números asignados a participantes. Si no hay inscripciones, no se extrae ningún número.
 - El primer número se revela automáticamente y los siguientes permanecen ocultos.
 - Cada número posterior se revela desde el panel con el botón `Extreure un nou número`.

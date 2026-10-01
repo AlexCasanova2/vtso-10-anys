@@ -46,7 +46,7 @@ function Show({ event }: { event: PublicEvent }) {
     <div className="show-stage">
       {ready ? <Revelation key={`${event.id}:${ready.revealed_at}:${ready.number}`} draw={ready} total={event.prize_count} /> : <section className="show-intro"><p className="show-kicker">VILADECANS THE STYLE OUTLETS</p><h1>El teu moment<br /><em>està a punt.</em></h1><p className="show-intro-copy">En breus començarà el sorteig</p><div className="show-loading"><span /></div><small>Prepara el teu número. Comença l&apos;emoció.</small></section>}
     </div>
-    <footer className="show-footer"><div><strong>{event.participant_count}</strong><span>participants</span></div><div><strong>{event.prize_count}</strong><span>números guanyadors</span></div><div><strong>{formatMoney(event.prize_value_cents)}</strong><span>per premi</span></div><p>{event.name}<span>{event.venue}</span></p></footer>
+    <footer className="show-footer"><div><strong>{event.participant_count}</strong><span>números participants</span></div><div><strong>{event.prize_count}</strong><span>números guanyadors</span></div><div><strong>{formatMoney(event.prize_value_cents)}</strong><span>per premi</span></div><p>{event.name}<span>{event.venue}</span></p></footer>
   </main>;
 }
 
