@@ -52,4 +52,11 @@ export const eventSchema = z.object({
   privacyUrl: z.string().url(),
   publicMessage: z.string().trim().max(240),
   status: z.enum(["draft", "scheduled", "registration_open", "registration_closed", "drawing", "completed"]),
+}).superRefine((event, context) => {
+  if (Date.parse(event.registrationOpensAt) >= Date.parse(event.registrationClosesAt)) {
+    context.addIssue({ code: "custom", path: ["registrationClosesAt"], message: "El tancament de la inscripció ha de ser posterior a l'obertura" });
+  }
+  if (Date.parse(event.registrationClosesAt) > Date.parse(event.startsAt)) {
+    context.addIssue({ code: "custom", path: ["startsAt"], message: "El sorteig no pot començar abans de tancar la inscripció" });
+  }
 });

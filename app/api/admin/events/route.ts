@@ -33,7 +33,10 @@ export async function POST(request: Request) {
     assignment_seed: assignmentSeed, assignment_seed_commitment: createHash("sha256").update(assignmentSeed).digest("hex"),
     draw_seed: drawSeed, draw_seed_commitment: createHash("sha256").update(drawSeed).digest("hex"),
   }).select("id,prize_count").single();
-  if (error) return apiError("No s'ha pogut crear la jornada", 500);
+  if (error) {
+    console.error("No s'ha pogut crear la jornada", { code: error.code, message: error.message });
+    return apiError(`No s'ha pogut crear la jornada (codi ${error.code ?? "desconegut"})`, 500);
+  }
   await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "event.created", entity_type: "event", entity_id: data.id, payload: value });
   return NextResponse.json({ id: data.id, prizeCount: data.prize_count }, { status: 201 });
 }
