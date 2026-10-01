@@ -132,6 +132,7 @@ export async function revealNextDrawNumber(eventId: string, actorId: string, act
     .from("events")
     .update({ updated_at: now })
     .eq("id", eventId)
+    .eq("status", "drawing")
     .eq("updated_at", event.updated_at)
     .select("id")
     .maybeSingle();

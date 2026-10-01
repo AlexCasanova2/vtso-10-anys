@@ -58,6 +58,13 @@
 .draw-actions { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; justify-content:flex-end; }
 .redraw-button { display:flex; align-items:center; gap:.5rem; border:1px solid var(--line); border-radius:999px; padding:1rem; background:white; font-weight:800; cursor:pointer; }
 .draw-actions button:disabled { opacity:.5; cursor:not-allowed; }
+.finish-draw-row { display:flex; justify-content:flex-end; margin-top:14px; }
+.confirm-backdrop { position:fixed; z-index:30; inset:0; display:grid; place-items:center; padding:20px; background:rgba(17,17,15,.6); }
+.confirm-dialog { width:min(520px,100%); max-height:calc(100svh - 40px); overflow:auto; padding:32px; box-shadow:0 24px 80px rgba(0,0,0,.22); }
+.confirm-icon { display:grid; place-items:center; width:52px; height:52px; margin-bottom:20px; border-radius:14px; background:rgba(231,82,148,.15); color:var(--red); }
+.confirm-dialog h2 { margin:.2rem 0 1rem; font-size:2rem; text-transform:uppercase; }
+.confirm-dialog>p:not(.eyebrow) { color:var(--muted); font-size:.9rem; line-height:1.6; }
+.confirm-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-top:24px; }
 .draw-history { margin-top:22px; padding:24px 28px; box-shadow:none; }
 .draw-history h2 { margin:.2rem 0 1rem; font-size:1.6rem; }
 .draw-history>p { color:var(--muted); font-size:.8rem; }
@@ -105,3 +112,4 @@
 @media (max-width:760px) { .operational-intro { align-items:start; flex-direction:column; gap:8px; } }
 @media (max-width:760px) { .danger-zone { align-items:stretch; flex-direction:column; }.danger-zone .button { width:100%; } }
 @media (max-width:760px) { .staff-register form { grid-template-columns:1fr; }.staff-register { padding:20px; } }
+@media (max-width:760px) { .confirm-dialog { padding:24px; }.confirm-actions { display:grid; }.finish-draw-row .button { width:100%; } }

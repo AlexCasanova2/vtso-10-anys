@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { LoaderCircle, TicketCheck } from "lucide-react";
 import { formatNumber, type EventDay } from "@/lib/types";
 import { ticketNumberCount } from "@/lib/ticket-tiers";
+import { isRegistrationOpen } from "@/lib/registration-window";
 
 type Result = { numbers: number[]; emailSent: boolean };
 
@@ -13,7 +14,7 @@ export function StaffRegistrationForm({ event, onRegistered }: { event: EventDay
   const [result, setResult] = useState<Result | null>(null);
   const [documentType, setDocumentType] = useState("dni");
   const [amount, setAmount] = useState("");
-  const open = new Date() >= new Date(event.registration_opens_at) && new Date() < new Date(event.registration_closes_at) && ["scheduled", "registration_open"].includes(event.status);
+  const open = isRegistrationOpen(event);
   const amountCents = Math.round(Number(amount) * 100);
   const numberCount = ticketNumberCount(amountCents);
 

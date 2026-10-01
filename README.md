@@ -39,4 +39,5 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 - El primer número se revela automáticamente y los siguientes permanecen ocultos.
 - Cada número posterior se revela desde el panel con el botón `Extreure un nou número`.
 - Si la persona no está presente, `Tornar a sortejar aquesta ronda` registra el intento como ausente y extrae otro participante para el mismo premio; el histórico de la jornada conserva ambos números.
+- El administrador puede finalizar el sorteo con confirmación desde la operativa, incluso si quedan premios sin extraer. El formulario presencial desaparece al cerrar la inscripción y la pantalla pública pasa automáticamente a la cuenta atrás de la siguiente jornada o a «Próximamente» si no existe otra.
 - Al entregar todos los premios, marca la jornada como `Finalizada` para revelar las semillas de verificación.

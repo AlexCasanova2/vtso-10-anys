@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { usePublicEvent } from "@/components/use-public-event";
 import { formatMoney, formatNumber, type PublicEvent } from "@/lib/types";
@@ -52,6 +53,11 @@ function Show({ event }: { event: PublicEvent }) {
 
 export function DrawScreen({ eventId }: { eventId?: string }) {
   const event = usePublicEvent(eventId);
+  const router = useRouter();
+  useEffect(() => {
+    if (event !== undefined && (!event || event.status !== "drawing")) router.replace("/pantalla");
+  }, [event, router]);
   if (!event) return <main className="draw-show show-placeholder"><Brand /><h1>{event === null ? "El pròxim gran moment, ben aviat." : "Preparant el teu moment…"}</h1></main>;
+  if (event.status !== "drawing") return <main className="draw-show show-placeholder"><Brand /><h1>Preparant la pròxima jornada…</h1></main>;
   return <Show key={event.id} event={event} />;
 }

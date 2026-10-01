@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
 import { usePublicEvent } from "@/components/use-public-event";
@@ -32,7 +31,7 @@ export function EventScreen({ displayMode = false }: { displayMode?: boolean }) 
   }, [event, router]);
 
   if (event === undefined) return <main className="event-shell loading">Preparant la celebració…</main>;
-  if (!event) return <main className="event-shell empty"><Brand /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p><Link className="button" href="/admin">Administració</Link></main>;
+  if (!event) return <main className="event-shell empty"><Brand /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p></main>;
 
   const open = new Date() >= new Date(event.registration_opens_at) && new Date() < new Date(event.registration_closes_at) && ["scheduled", "registration_open"].includes(event.status);
 

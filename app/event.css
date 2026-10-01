@@ -50,7 +50,7 @@
 .event-shell footer { position:relative; z-index:2; display:flex; justify-content:space-between; gap:20px; padding-top:14px; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
 .event-shell.loading,.event-shell.empty { display:grid; place-content:center; gap:1rem; text-align:center; }
 .event-shell.empty h1 { margin:0; font-size:clamp(3rem,8vw,7rem); }
-.event-shell.empty .brand,.event-shell.empty .button { margin:auto; }
+.event-shell.empty .brand { margin:auto; }
 @keyframes orbit-spin { to { transform:rotate(360deg); } }
 @keyframes triangle-float { 0%,100% { translate:0 -8px; rotate:-4deg; } 50% { translate:0 10px; rotate:6deg; } }
 @keyframes ten-breathe { 0%,100% { transform:scale(.97) rotate(-2deg); } 50% { transform:scale(1.03) rotate(1deg); } }

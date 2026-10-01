@@ -21,6 +21,7 @@ export async function POST(request: Request) {
   const parsed = eventSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiError(parsed.error.issues[0]?.message ?? "Dades no vàlides");
   const value = parsed.data;
+  if (value.status === "completed") return apiError("No es pot crear una jornada finalitzada");
   const assignmentSeed = randomBytes(32).toString("hex");
   const drawSeed = randomBytes(32).toString("hex");
   const supabase = createAdminClient();
@@ -31,8 +32,8 @@ export async function POST(request: Request) {
     terms_url: value.termsUrl, privacy_url: value.privacyUrl, public_message: value.publicMessage, status: value.status,
     assignment_seed: assignmentSeed, assignment_seed_commitment: createHash("sha256").update(assignmentSeed).digest("hex"),
     draw_seed: drawSeed, draw_seed_commitment: createHash("sha256").update(drawSeed).digest("hex"),
-  }).select("id").single();
+  }).select("id,prize_count").single();
   if (error) return apiError("No s'ha pogut crear la jornada", 500);
   await supabase.from("audit_logs").insert({ actor_id: auth.user.id, action: "event.created", entity_type: "event", entity_id: data.id, payload: value });
-  return NextResponse.json({ id: data.id }, { status: 201 });
+  return NextResponse.json({ id: data.id, prizeCount: data.prize_count }, { status: 201 });
 }
