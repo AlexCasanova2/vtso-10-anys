@@ -1,33 +1,11 @@
-import { createHmac } from "node:crypto";
 import { apiError } from "@/lib/api";
+import { generateNumbers, resolveDrawOrder } from "@/lib/draw-order";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
-type DrawEvent = { id: string; draw_seed: string; prize_count: number; status: string; updated_at: string };
+type DrawEvent = { id: string; draw_seed: string };
 type PreparedPayload = { numbers: number[]; algorithm: string };
 type RevealedPayload = { number: number; position: number };
-
-function deterministicIndex(seed: string, context: string, upperBound: number) {
-  const digest = createHmac("sha256", seed).update(context).digest();
-  const limit = Math.floor(0x100000000 / upperBound) * upperBound;
-  for (let offset = 0; offset < 32; offset += 4) {
-    const value = digest.readUInt32BE(offset);
-    if (value < limit) return value % upperBound;
-  }
-  return deterministicIndex(seed, `${context}:retry`, upperBound);
-}
-
-function generateNumbers(seed: string, assignedNumbers: number[]) {
-  const pool = [...assignedNumbers].sort((a, b) => a - b);
-  const selected: number[] = [];
-
-  for (let position = 0; position < pool.length; position += 1) {
-    const index = deterministicIndex(seed, `prize:${position + 1}`, pool.length);
-    selected.push(pool.splice(index, 1)[0]);
-  }
-
-  return selected;
-}
 
 async function assignedNumbers(supabase: AdminClient, eventId: string) {
   const { data, error } = await supabase.from("entries").select("number").eq("event_id", eventId).range(0, 999);
@@ -60,33 +38,11 @@ async function revealedNumbers(supabase: AdminClient, eventId: string) {
   return (data ?? []).map((row) => ({ ...(row.payload as RevealedPayload), revealed_at: row.created_at }));
 }
 
-async function insertPreparedSequence(supabase: AdminClient, event: DrawEvent) {
+export async function ensureDrawSequence(supabase: AdminClient, event: DrawEvent) {
   const numbers = generateNumbers(event.draw_seed, await assignedNumbers(supabase, event.id));
   if (!numbers.length) return;
-  const now = new Date().toISOString();
-  const { error } = await supabase.from("audit_logs").insert([
-    { action: "draw.sequence_prepared", entity_type: "event", entity_id: event.id, payload: { numbers, algorithm: "hmac-sha256-registered-without-replacement-v2" }, created_at: now },
-    { action: "draw.number_revealed", entity_type: "event", entity_id: event.id, payload: { number: numbers[0], position: 1 }, created_at: now },
-  ]);
-  if (error) console.error(`Draw sequence preparation failed for event ${event.id}`, error);
-}
-
-export async function ensureDrawSequence(supabase: AdminClient, event: DrawEvent, transitionOwned = false) {
-  if (await preparedSequence(supabase, event.id)) return;
-
-  if (!transitionOwned) {
-    const now = new Date().toISOString();
-    const { data: locked } = await supabase
-      .from("events")
-      .update({ updated_at: now })
-      .eq("id", event.id)
-      .eq("updated_at", event.updated_at)
-      .select("id")
-      .maybeSingle();
-    if (!locked) return;
-  }
-
-  await insertPreparedSequence(supabase, event);
+  const { error } = await supabase.rpc("prepare_draw_sequence", { p_event_id: event.id, p_numbers: numbers });
+  if (error) throw new Error(`No s'ha pogut preparar la seqüència del sorteig: ${error.message}`);
 }
 
 export async function getDrawState(supabase: AdminClient, eventId: string) {
@@ -118,11 +74,9 @@ export async function revealNextDrawNumber(eventId: string, actorId: string, act
   if (!current) return { error: apiError("Encara no s'ha extret cap número") };
   if (action === "extract" && current.position >= event.prize_count) return { error: apiError("Ja s'han extret tots els números") };
 
-  // Older events prepared a sequence from 000–999. For their remaining attempts,
-  // generate an order using only assigned numbers rather than drawing empty tickets.
-  const numbers = prepared.payload.algorithm === "hmac-sha256-registered-without-replacement-v2"
-    ? prepared.payload.numbers
-    : generateNumbers(event.draw_seed, await assignedNumbers(supabase, eventId));
+  // Reconstruir la secuencia en sorteos antiguos que incluían números vacíos
+  // o cuya preparación quedó truncada, sin modificar su historial guardado.
+  const numbers = resolveDrawOrder(event.draw_seed, await assignedNumbers(supabase, eventId), prepared.payload);
   const used = new Set(revealed.map((draw) => draw.number));
   const number = numbers.find((candidate) => !used.has(candidate));
   if (number === undefined) return { error: apiError("No queden números de participants disponibles per sortejar") };

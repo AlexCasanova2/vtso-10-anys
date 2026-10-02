@@ -16,12 +16,14 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 ## Puesta en marcha
 
 1. Crea un proyecto de Supabase en una región europea.
-2. Ejecuta `supabase/migrations/202609230001_initial.sql`, `supabase/migrations/202610010001_staff_tickets.sql` y `supabase/migrations/202610010002_delete_event_with_data.sql` en ese orden desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
+2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610020001_prepare_draw_sequence.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
 3. Copia `.env.example` a `.env.local` y completa las variables.
 4. Ejecuta `npm install` y `npm run dev`.
 5. Desactiva el alta pública de usuarios en Supabase Authentication.
 6. Crea el usuario inicial desde Supabase Authentication y asígnale un perfil ejecutando `insert into public.profiles (id, full_name, role) values ('ID_DEL_USUARIO', 'Nombre', 'admin');` en el editor SQL. Para personal de incidencias utiliza el rol `operator`.
 7. Configura en Brevo el webhook `https://tu-dominio/api/webhooks/brevo` y añade la cabecera `x-webhook-secret` con el valor de `BREVO_WEBHOOK_SECRET`.
+
+Para comprobar la preparación atómica del sorteo tras instalar su migración, ejecuta `supabase/tests/prepare_draw_sequence.sql` desde el editor SQL. La prueba verifica el orden completo y la idempotencia, y termina con `ROLLBACK` para no conservar datos de prueba. No sustituye un simulacro de peticiones simultáneas antes del sorteo real.
 
 ### Correo transaccional
 
@@ -33,7 +35,7 @@ Después de desplegar, comprueba que `/api/health` muestra `configured.brevo: tr
 
 Al crear una jornada, el servidor genera dos semillas independientes de 256 bits: una para asignaciones y otra para extracciones. Antes de empezar se publica en la configuración el SHA-256 de la semilla de extracciones.
 
-La asignación calcula `HMAC-SHA256(semilla, tipo_documento:documento:país)`, obtiene un índice mediante rejection sampling sin sesgo modular y recorre circularmente el pool hasta encontrar un número libre. Al comenzar el sorteo se genera, con la semilla independiente de extracciones, una secuencia sin repeticiones entre los números inscritos. La secuencia queda registrada en el servidor y cada revelación posterior se audita por separado.
+La asignación calcula `HMAC-SHA256(semilla, tipo_documento:documento:país)`, obtiene un índice mediante rejection sampling sin sesgo modular y recorre circularmente el pool hasta encontrar un número libre. Al comenzar el sorteo se genera, con la semilla independiente de extracciones, una secuencia sin repeticiones entre todos los números inscritos. Una función transaccional registra la secuencia y la primera revelación una sola vez, incluso ante peticiones simultáneas. Cada revelación posterior se audita por separado.
 
 Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el listado ordenado de participaciones y el histórico de extracciones se puede reproducir y contrastar con los compromisos publicados. La explicación definitiva debe incorporarse a las bases legales y ser revisada jurídicamente.
 

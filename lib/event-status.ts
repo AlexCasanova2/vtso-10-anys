@@ -44,7 +44,7 @@ export async function reconcileEventStatuses(now = new Date()) {
 
       if (startError || !started) return;
 
-      await ensureDrawSequence(supabase, { ...event, status: "drawing", updated_at: nowIso }, true);
+      await ensureDrawSequence(supabase, event);
       return;
     }
 
