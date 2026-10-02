@@ -12,6 +12,7 @@ export async function GET() {
     anonKey: Boolean(anonKey),
     serviceRoleKey: Boolean(serviceKey),
     brevo: Boolean(process.env.BREVO_SMTP_LOGIN && process.env.BREVO_SMTP_KEY && process.env.BREVO_SENDER_EMAIL),
+    registrationLinks: Boolean(process.env.REGISTRATION_BASE_URL),
   };
 
   if (!url || !serviceKey) {

@@ -4,7 +4,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 
 ## Funcionalidades
 
-- Inscripción presencial desde administración: el personal verifica el ticket físico (referencia e importe) y asigna 1 número desde 60 €, 2 desde 80 € o 3 desde 100 €, hasta 1.000 números únicos por jornada.
+- Inscripción en dos pasos: el personal comprueba presencialmente el ticket y la pertenencia al Club, e introduce referencia, importe, nombre y correo. El participante recibe un enlace personal y completa apellidos, documento y aceptación legal. Solo entonces se asignan 1 número desde 60 €, 2 desde 80 € o 3 desde 100 €, hasta 1.000 números únicos por jornada.
 - Asignación y extracciones deterministas a partir de semillas criptográficas secretas.
 - Un solo correo transaccional mediante Brevo con todos los números acumulados por persona y jornada (también al reenviar).
 - Pantalla pública en tiempo real con contador, cuenta atrás, indicaciones de inscripción presencial y número extraído.
@@ -16,7 +16,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 ## Puesta en marcha
 
 1. Crea un proyecto de Supabase en una región europea.
-2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610020001_prepare_draw_sequence.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
+2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610020002_pending_ticket_registration.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
 3. Copia `.env.example` a `.env.local` y completa las variables.
 4. Ejecuta `npm install` y `npm run dev`.
 5. Desactiva el alta pública de usuarios en Supabase Authentication.
@@ -25,11 +25,15 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 
 Para comprobar la preparación atómica del sorteo tras instalar su migración, ejecuta `supabase/tests/prepare_draw_sequence.sql` desde el editor SQL. La prueba verifica el orden completo y la idempotencia, y termina con `ROLLBACK` para no conservar datos de prueba. No sustituye un simulacro de peticiones simultáneas antes del sorteo real.
 
+Para comprobar el registro en dos pasos tras instalar su migración, ejecuta `supabase/tests/pending_ticket_registration.sql`. Crea una jornada de prueba dentro de una transacción, verifica que el enlace se invalida al reenviar o confirmar y termina con `ROLLBACK`.
+
 ### Correo transaccional
 
 El envío utiliza el relay SMTP de Brevo por el puerto 587 con STARTTLS. Configura `BREVO_SMTP_LOGIN` (usuario SMTP de Brevo), `BREVO_SMTP_KEY` (clave SMTP, no la clave API), `BREVO_SENDER_EMAIL` (remitente verificado) y `BREVO_SENDER_NAME` como secretos del servidor en Vercel para el entorno de producción. No publiques las claves en el repositorio ni las compartas por chat. El bloqueo de IP para claves API puede seguir activado si las conexiones SMTP están permitidas en Brevo.
 
 Después de desplegar, comprueba que `/api/health` muestra `configured.brevo: true` y prueba un reenvío controlado a un buzón autorizado. Verifica la recepción y que el webhook actualiza el estado a `delivered`; la aceptación SMTP solo indica que Brevo recibió el mensaje. Si el webhook no incluye `X-Mailin-custom`, el estado de los nuevos envíos no podrá asociarse automáticamente y habrá que revisar su configuración en Brevo.
+
+Configura también `REGISTRATION_BASE_URL=https://vtso10anys.tandemprojects.cat` en Vercel antes de desplegar el formulario en dos pasos. No construyas el enlace desde la cabecera `Host` de la petición: una URL configurada evita enviar invitaciones hacia un dominio ajeno. El enlace caduca a las 24 horas o al cierre de la inscripción, lo que ocurra primero; reenviarlo desde el panel invalida el anterior. Una invitación pendiente no asigna números ni participa en el sorteo. Si el correo inicial falla, el personal puede reenviar desde la lista de invitaciones pendientes.
 
 ## Aleatoriedad verificable
 
@@ -42,7 +46,8 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 ## Operación del evento
 
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
-- El personal comprueba físicamente el ticket y registra su referencia única, el importe y los datos de la persona en el panel. No se asignan participaciones desde el enlace público; la referencia no puede utilizarse dos veces en una misma jornada.
+- El personal comprueba físicamente el ticket (referencia, importe y fecha) y la pertenencia al Club. Solo registra la referencia única, el importe, el nombre y el correo. La fecha del ticket no se almacena en la aplicación.
+- La persona completa el resto de datos y acepta las bases mediante el enlace de un solo uso recibido por correo. Antes de eso no tiene números asignados. La referencia no puede confirmarse dos veces en la misma jornada.
 - A la hora programada se selecciona una secuencia única entre los números asignados a participantes. Si no hay inscripciones, no se extrae ningún número.
 - El primer número se revela automáticamente y los siguientes permanecen ocultos.
 - Cada número posterior se revela desde el panel con el botón `Extreure un nou número`.

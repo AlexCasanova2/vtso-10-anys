@@ -19,14 +19,11 @@ function validSpanishDocument(type: string, raw: string) {
 }
 
 export const registrationSchema = z.object({
-  eventId: z.string().uuid(),
-  firstName: z.string().trim().min(2).max(80),
+  token: z.string().regex(/^[0-9a-f]{64}$/),
   lastName: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(180),
   documentType: z.enum(["dni", "nie", "passport"]),
   documentNumber: z.string().trim().min(5).max(25),
   documentCountry: z.string().trim().length(2).default("ES"),
-  clubMember: z.literal(true),
   legalAccepted: z.literal(true),
 }).superRefine((data, context) => {
   if (!validSpanishDocument(data.documentType, data.documentNumber)) {
@@ -34,7 +31,10 @@ export const registrationSchema = z.object({
   }
 });
 
-export const staffRegistrationSchema = registrationSchema.extend({
+export const staffRegistrationSchema = z.object({
+  eventId: z.string().uuid(),
+  firstName: z.string().trim().min(2).max(80),
+  email: z.string().trim().email().max(180),
   ticketCode: z.string().trim().min(2).max(100),
   amountCents: z.number().int().min(6000),
 });
