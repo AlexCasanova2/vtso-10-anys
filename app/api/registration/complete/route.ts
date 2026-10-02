@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     : { data: null, error: null };
   if (relatedError || !related?.length) {
     console.error("Participació confirmada però no disponible per al correu", relatedError);
-    return NextResponse.json({ numbers, emailSent: false });
+    return NextResponse.json({ emailSent: false });
   }
 
   const { data: event } = await supabase.from("events").select("*").eq("id", first.event_id).single();
@@ -62,5 +62,5 @@ export async function POST(request: Request) {
 
   await supabase.from("audit_logs").insert({ action: "ticket.registered", entity_type: "entry",
     entity_id: first.entry_id, payload: { event_id: first.event_id, numbers, email_sent: emailSent } });
-  return NextResponse.json({ numbers, emailSent });
+  return NextResponse.json({ emailSent });
 }

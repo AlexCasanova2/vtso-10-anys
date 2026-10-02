@@ -2,7 +2,6 @@
 
 import { type FormEvent, useState } from "react";
 import { LoaderCircle } from "lucide-react";
-import { formatNumber } from "@/lib/types";
 
 export function RegistrationCompletionForm({ token, firstName, termsUrl, privacyUrl }: {
   token: string; firstName: string; termsUrl: string; privacyUrl: string;
@@ -10,7 +9,7 @@ export function RegistrationCompletionForm({ token, firstName, termsUrl, privacy
   const [documentType, setDocumentType] = useState("dni");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState<{ numbers: number[]; emailSent: boolean } | null>(null);
+  const [result, setResult] = useState<{ emailSent: boolean } | null>(null);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,9 +31,10 @@ export function RegistrationCompletionForm({ token, firstName, termsUrl, privacy
 
   return <section className="register-panel card">
     {result ? <div role="status"><h2>Participació confirmada</h2>
-      <p>Els teus números són <strong>{result.numbers.map(formatNumber).join(" · ")}</strong>.</p>
-      <p>{result.emailSent ? "T'hem enviat un correu amb tots els números de la jornada."
-        : "La participació és vàlida, però no s'ha pogut enviar el correu. Demana al personal que el reenviï."}</p>
+      {result.emailSent ? <>
+        <p>Consulta la safata d&apos;entrada del teu correu per veure els números de la jornada.</p>
+        <p>Si no has rebut el correu al cap de 10 minuts, revisa la carpeta de correu brossa (SPAM). Si tampoc hi és, ves al mostrador perquè t&apos;ajudin.</p>
+      </> : <p>La participació és vàlida, però no s&apos;ha pogut enviar el correu. Ves al mostrador perquè t&apos;ajudin.</p>}
     </div> : <><h2>Les teves dades</h2><p>Hola, {firstName}. Completa la informació per confirmar la participació.</p>
       <form onSubmit={submit}>
         <div className="field"><label htmlFor="completion-last-name">Cognoms</label>
