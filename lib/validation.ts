@@ -39,7 +39,21 @@ export const staffRegistrationSchema = z.object({
   amountCents: z.number().int().min(6000),
 });
 
+export const fullStaffRegistrationSchema = staffRegistrationSchema.extend({
+  lastName: z.string().trim().min(2).max(120),
+  documentType: z.enum(["dni", "nie", "passport"]),
+  documentNumber: z.string().trim().min(5).max(25),
+  documentCountry: z.string().trim().length(2).default("ES"),
+  clubMember: z.literal(true),
+  legalAccepted: z.literal(true),
+}).superRefine((data, context) => {
+  if (!validSpanishDocument(data.documentType, data.documentNumber)) {
+    context.addIssue({ code: "custom", path: ["documentNumber"], message: "El document no té un format vàlid" });
+  }
+});
+
 export const eventSchema = z.object({
+  staffRegistrationFull: z.boolean().default(true),
   name: z.string().trim().min(3).max(100),
   startsAt: z.string().datetime(),
   registrationOpensAt: z.string().datetime(),

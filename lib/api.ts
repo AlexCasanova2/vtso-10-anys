@@ -13,6 +13,7 @@ export async function requireApiAdmin(requiredRole?: "admin") {
 }
 
 export function databaseMessage(message: string) {
+  if (message.includes("REGISTRATION_MODE_CHANGED")) return "El mode d'inscripció ha canviat. Actualitza la pàgina";
   if (message.includes("ALREADY_REGISTERED")) return "Ja tens una participació per a aquesta jornada";
   if (message.includes("REGISTRATION_NOT_OPEN")) return "La inscripció encara no està oberta";
   if (message.includes("REGISTRATION_CLOSED")) return "La inscripció per a aquesta jornada està tancada";

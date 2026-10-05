@@ -10,7 +10,7 @@ export async function GET() {
   if (auth.error) return auth.error;
   await reconcileEventStatuses();
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from("events").select("id,name,starts_at,registration_opens_at,registration_closes_at,prize_count,prize_value_cents,status,venue,club_signup_url,terms_url,privacy_url,public_message,draw_seed_commitment,draw_seed_revealed,entries(count),draws(count)").order("starts_at");
+  const { data, error } = await supabase.from("events").select("id,name,starts_at,registration_opens_at,registration_closes_at,prize_count,prize_value_cents,status,venue,club_signup_url,terms_url,privacy_url,public_message,staff_registration_full,draw_seed_commitment,draw_seed_revealed,entries(count),draws(count)").order("starts_at");
   if (error) return apiError("No s'han pogut carregar les jornades", 500);
   return NextResponse.json({ events: data });
 }
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
   const drawSeed = randomBytes(32).toString("hex");
   const supabase = createAdminClient();
   const { data, error } = await supabase.from("events").insert({
+    staff_registration_full: value.staffRegistrationFull,
     name: value.name, starts_at: value.startsAt, registration_opens_at: value.registrationOpensAt,
     registration_closes_at: value.registrationClosesAt, prize_count: value.prizeCount,
     prize_value_cents: value.prizeValueCents, venue: value.venue, club_signup_url: value.clubSignupUrl,

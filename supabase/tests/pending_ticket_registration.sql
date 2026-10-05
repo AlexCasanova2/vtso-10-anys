@@ -21,6 +21,7 @@ begin
     'https://example.com/terms', 'https://example.com/privacy',
     'test-seed', 'test-commitment', 'test-draw-seed', 'test-draw-commitment')
   returning id into v_event;
+  update public.events set staff_registration_full = false where id = v_event;
   v_email := 'test-' || left(v_event::text, 8) || '@example.invalid';
   v_document := left(replace(v_event::text, '-', ''), 20);
 

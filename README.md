@@ -4,7 +4,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 
 ## Funcionalidades
 
-- Inscripción en dos pasos: el personal comprueba presencialmente el ticket y la pertenencia al Club, e introduce referencia, importe, nombre y correo. El participante recibe un enlace personal y completa apellidos, documento y aceptación legal. Solo entonces se asignan 1 número desde 60 €, 2 desde 80 € o 3 desde 100 €, hasta 1.000 números únicos por jornada.
+- Inscripción configurable por jornada: por defecto, el personal completa todos los datos y recoge la aceptación legal desde administración. Al desmarcar «Omple totes les dades des de l'administració», introduce solo referencia, importe, nombre y correo; el participante recibe un enlace para completar el resto. Se asignan 1 número desde 60 €, 2 desde 80 € o 3 desde 100 €, hasta 1.000 números únicos por jornada, únicamente al confirmar la inscripción.
 - Asignación y extracciones deterministas a partir de semillas criptográficas secretas.
 - Un solo correo transaccional mediante Brevo con todos los números acumulados por persona y jornada (también al reenviar).
 - Pantalla pública en tiempo real con contador, cuenta atrás, indicaciones de inscripción presencial y número extraído.
@@ -16,7 +16,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 ## Puesta en marcha
 
 1. Crea un proyecto de Supabase en una región europea.
-2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610020002_pending_ticket_registration.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
+2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610050001_staff_registration_mode.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
 3. Copia `.env.example` a `.env.local` y completa las variables.
 4. Ejecuta `npm install` y `npm run dev`.
 5. Desactiva el alta pública de usuarios en Supabase Authentication.
@@ -26,6 +26,8 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 Para comprobar la preparación atómica del sorteo tras instalar su migración, ejecuta `supabase/tests/prepare_draw_sequence.sql` desde el editor SQL. La prueba verifica el orden completo y la idempotencia, y termina con `ROLLBACK` para no conservar datos de prueba. No sustituye un simulacro de peticiones simultáneas antes del sorteo real.
 
 Para comprobar el registro en dos pasos tras instalar su migración, ejecuta `supabase/tests/pending_ticket_registration.sql`. Crea una jornada de prueba dentro de una transacción, verifica que el enlace se invalida al reenviar o confirmar y termina con `ROLLBACK`.
+
+El formulario completo está marcado por defecto en las jornadas nuevas. La migración conserva el modo de las jornadas existentes; puedes cambiarlo en su configuración. Los enlaces enviados siguen siendo válidos al cambiar el modo; para reenviarlos, vuelve al modo de enlace. Ejecuta `supabase/tests/staff_registration_mode.sql` para comprobar el modo por defecto, la aceptación obligatoria, la asignación y la finalización de enlaces anteriores; termina con `ROLLBACK`.
 
 ### Correo transaccional
 
@@ -46,8 +48,8 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 ## Operación del evento
 
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
-- El personal comprueba físicamente el ticket (referencia, importe y fecha) y la pertenencia al Club. Solo registra la referencia única, el importe, el nombre y el correo. La fecha del ticket no se almacena en la aplicación.
-- La persona completa el resto de datos y acepta las bases mediante el enlace de un solo uso recibido por correo. Antes de eso no tiene números asignados. La referencia no puede confirmarse dos veces en la misma jornada.
+- El personal comprueba físicamente el ticket (referencia, importe y fecha) y la pertenencia al Club. En el modo completo registra también apellidos y documento, y confirma que el participante ha aceptado las bases y leído la política de privacidad. La fecha del ticket no se almacena en la aplicación.
+- En el modo de enlace, el personal registra solo referencia, importe, nombre y correo; la persona completa el resto mediante el enlace recibido. Antes de confirmar no tiene números asignados. La referencia no puede confirmarse dos veces en la misma jornada. En ambos modos se envía un correo final con todos los números acumulados.
 - A la hora programada se selecciona una secuencia única entre los números asignados a participantes. Si no hay inscripciones, no se extrae ningún número.
 - El primer número se revela automáticamente y los siguientes permanecen ocultos.
 - Cada número posterior se revela desde el panel con el botón `Extreure un nou número`.

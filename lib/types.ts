@@ -1,6 +1,7 @@
 export type EventStatus = "draft" | "scheduled" | "registration_open" | "registration_closed" | "drawing" | "completed";
 
 export type EventDay = {
+  staff_registration_full?: boolean;
   id: string;
   name: string;
   starts_at: string;

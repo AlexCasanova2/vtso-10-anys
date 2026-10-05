@@ -18,6 +18,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (value.status === "completed" && existing.status !== "completed") return apiError("Finalitza el sorteig des de l'operativa en directe");
   if (existing.status === "completed" && value.status !== "completed") return apiError("No es pot reobrir una jornada finalitzada");
   const { data: saved, error } = await supabase.from("events").update({
+    staff_registration_full: value.staffRegistrationFull,
     name: value.name, starts_at: value.startsAt, registration_opens_at: value.registrationOpensAt,
     registration_closes_at: value.registrationClosesAt, prize_count: value.prizeCount,
     prize_value_cents: value.prizeValueCents, venue: value.venue, club_signup_url: value.clubSignupUrl,
