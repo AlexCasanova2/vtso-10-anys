@@ -15,6 +15,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const { data: existing, error: lookupError } = await supabase.from("events").select("status").eq("id", id).maybeSingle();
   if (lookupError) return apiError("No s'ha pogut carregar la jornada", 500);
   if (!existing) return apiError("No s'ha trobat la jornada", 404);
+  if (value.status === "drawing" && existing.status !== "drawing") return apiError("Inicia el sorteig des de l'operativa en directe");
   if (value.status === "completed" && existing.status !== "completed") return apiError("Finalitza el sorteig des de l'operativa en directe");
   if (existing.status === "completed" && value.status !== "completed") return apiError("No es pot reobrir una jornada finalitzada");
   const { data: saved, error } = await supabase.from("events").update({

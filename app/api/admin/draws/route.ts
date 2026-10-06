@@ -4,7 +4,7 @@ import { apiError, requireApiAdmin } from "@/lib/api";
 import { getDrawHistory, revealNextDrawNumber } from "@/lib/draw-sequence";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const schema = z.object({ eventId: z.string().uuid(), action: z.enum(["extract", "redraw"]) });
+const schema = z.object({ eventId: z.string().uuid(), action: z.enum(["extract", "redraw", "skip"]), expectedNumber: z.number().int().min(0).max(999) });
 
 export async function GET(request: Request) {
   const auth = await requireApiAdmin();
@@ -23,8 +23,8 @@ export async function POST(request: Request) {
   if (auth.error) return auth.error;
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return apiError("Operació no vàlida");
-  const { eventId, action } = parsed.data;
-  const result = await revealNextDrawNumber(eventId, auth.user.id, action);
+  const { eventId, action, expectedNumber } = parsed.data;
+  const result = await revealNextDrawNumber(eventId, auth.user.id, action, expectedNumber);
   if (result.error) return result.error;
   return NextResponse.json({ draw: result.draw });
 }

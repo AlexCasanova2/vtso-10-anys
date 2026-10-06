@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return apiError(parsed.error.issues[0]?.message ?? "Dades no vàlides");
   const value = parsed.data;
   if (value.status === "completed") return apiError("No es pot crear una jornada finalitzada");
+  if (value.status === "drawing") return apiError("Inicia el sorteig des de l'operativa en directe");
   const assignmentSeed = randomBytes(32).toString("hex");
   const drawSeed = randomBytes(32).toString("hex");
   const supabase = createAdminClient();

@@ -16,7 +16,7 @@ Plataforma para gestionar las tres jornadas independientes del sorteo de anivers
 ## Puesta en marcha
 
 1. Crea un proyecto de Supabase en una región europea.
-2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610050001_staff_registration_mode.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
+2. Ejecuta las migraciones de `supabase/migrations/` en orden de nombre, incluida `202610060002_two_draw_attempts.sql`, desde el editor SQL. En instalaciones existentes aplica solo las migraciones pendientes antes de desplegar el código que las utiliza.
 3. Copia `.env.example` a `.env.local` y completa las variables.
 4. Ejecuta `npm install` y `npm run dev`.
 5. Desactiva el alta pública de usuarios en Supabase Authentication.
@@ -50,10 +50,15 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
 - El personal comprueba físicamente el ticket (referencia, importe y fecha) y la pertenencia al Club. En el modo completo registra también apellidos y documento, y confirma que el participante ha aceptado las bases y leído la política de privacidad. La fecha del ticket no se almacena en la aplicación.
 - En el modo de enlace, el personal registra solo referencia, importe, nombre y correo; la persona completa el resto mediante el enlace recibido. Antes de confirmar no tiene números asignados. La referencia no puede confirmarse dos veces en la misma jornada. En ambos modos se envía un correo final con todos los números acumulados.
-- A la hora programada se selecciona una secuencia única entre los números asignados a participantes. Si no hay inscripciones, no se extrae ningún número.
-- El primer número se revela automáticamente y los siguientes permanecen ocultos.
+- Al terminar la cuenta atrás, la pantalla espera con el mensaje «El sorteig començarà en breus». No se inicia ninguna extracción por horario, por recargar ni por el cron.
+- Desde la operativa, un administrador u operador pulsa `Inicia el sorteig` y confirma. Solo se permite a partir de la hora prevista, con inscripción cerrada y números confirmados. El inicio, la secuencia y el primer número se guardan en una única transacción; repetir la petición no vuelve a extraer. Los siguientes permanecen ocultos.
 - Cada número posterior se revela desde el panel con el botón `Extreure un nou número`.
-- Si la persona no está presente, `Tornar a sortejar aquesta ronda` registra el intento como ausente y extrae otro participante para el mismo premio; el histórico de la jornada conserva ambos números.
+- Cada premio admite como máximo dos intentos. `No present: segon intent` registra la primera ausencia y revela otro número para el mismo premio. Si tampoco está presente, `No present: deixar el premi sense adjudicar` requiere confirmación, registra la segunda ausencia y deja el premio definitivamente sin adjudicar; revela el primer número del siguiente premio, si existe y quedan números. En el último premio no extrae otro número. El administrador sigue siendo quien finaliza la jornada.
+- `Passar al següent premi` se usa cuando la persona está presente y se ha resuelto el premio; no registra una ausencia. Cada petición lleva el número actual esperado: solicitudes repetidas o de otro operador con un número anterior se rechazan sin avanzar. Las ausencias, el cierre sin adjudicar y la extracción siguiente se guardan en una única transacción.
 - El administrador puede finalizar el sorteo con confirmación desde la operativa, incluso si quedan premios sin extraer. El formulario presencial desaparece al cerrar la inscripción y la pantalla pública pasa automáticamente a la cuenta atrás de la siguiente jornada o a «Próximamente» si no existe otra.
 - Al entregar todos los premios, marca la jornada como `Finalizada` para revelar las semillas de verificación.
 - Solo un administrador puede borrar una jornada con datos si está finalizada. Tras la confirmación, se eliminan en una transacción sus tickets, participaciones, extracciones, correos y auditorías asociadas; las personas compartidas con otras jornadas se conservan. Solo queda una constancia mínima de la eliminación. No se puede deshacer.
+
+Después de instalar la migración de inicio manual, ejecuta `supabase/tests/manual_draw_start.sql` en un entorno de prueba. Verifica permisos, horario, ausencia de inscritos, rollback de una secuencia inválida, primera extracción única y protección de jornadas finalizadas. Termina con `ROLLBACK`. No sustituye un ensayo de concurrencia ni autoriza pruebas en la jornada real.
+
+Para la regla de dos intentos, aplica también `202610060002_two_draw_attempts.sql` y ejecuta `supabase/tests/two_draw_attempts.sql` en pruebas. Comprueba el límite, las dos ausencias, premios sin adjudicar, avance normal, peticiones repetidas y cierre del último premio sin otra extracción. La prueba termina con `ROLLBACK`.

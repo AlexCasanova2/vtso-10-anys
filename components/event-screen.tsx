@@ -13,7 +13,8 @@ function Countdown({ target }: { target: string }) {
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const left = Math.max(0, new Date(target).getTime() - now);
   const parts = [Math.floor(left / 86400000), Math.floor(left / 3600000) % 24, Math.floor(left / 60000) % 60, Math.floor(left / 1000) % 60];
-  return <div className="countdown">{parts.map((part, index) => <div key={index}><strong>{String(part).padStart(2, "0")}</strong><span>{["dies", "hores", "min", "seg"][index]}</span></div>)}</div>;
+  if (!left) return <p className="draw-start-wait" role="status">El sorteig començarà en breus.<br /><span>Prepara els teus números!</span></p>;
+  return <><p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><div className="countdown">{parts.map((part, index) => <div key={index}><strong>{String(part).padStart(2, "0")}</strong><span>{["dies", "hores", "min", "seg"][index]}</span></div>)}</div></>;
 }
 
 export function EventScreen({ displayMode = false }: { displayMode?: boolean }) {
@@ -23,13 +24,10 @@ export function EventScreen({ displayMode = false }: { displayMode?: boolean }) 
     if (!event || event.status === "completed") return;
     const destination = `/sorteig?jornada=${encodeURIComponent(event.id)}`;
     router.prefetch(destination);
-    const remaining = new Date(event.starts_at).getTime() - Date.now();
-    if (event.status === "drawing" || remaining <= 0) {
+    if (event.status === "drawing") {
       router.replace(destination);
       return;
     }
-    const timer = setTimeout(() => router.replace(destination), Math.min(remaining, 2147483647));
-    return () => clearTimeout(timer);
   }, [event, router]);
 
   if (event === undefined) return <main className="event-shell campaign-shell loading">Preparant la celebració…</main>;
@@ -46,7 +44,7 @@ export function EventScreen({ displayMode = false }: { displayMode?: boolean }) 
           <p className="eyebrow">Fem 10 anys</p>
           <h1 className="display">Regalem<br /><mark>10.000 €</mark></h1>
           <p className="event-message">{event.public_message || "40 premis de 250 €. Serà teu?"}</p>
-          <p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><Countdown target={event.starts_at} />
+          <Countdown target={event.starts_at} />
         </div>
         <aside className="join-card">
           <Image className="campaign-seal" src="/brand/sello.png" alt="10, 17 i 24 d’octubre" width={279} height={279} sizes="140px" />

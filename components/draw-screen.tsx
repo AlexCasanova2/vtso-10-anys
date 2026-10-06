@@ -25,14 +25,14 @@ function Revelation({ draw, total }: { draw: NonNullable<PublicEvent["current_dr
   const winner = formatNumber(draw.number);
   return <section className={`show-revelation ${finished ? "landed" : "rolling"}`}>
     <p className="show-kicker">EXTRACCIÓ {String(draw.position).padStart(2, "0")} <span>/ {String(total).padStart(2, "0")}</span></p>
-    <h1 className="show-label">{finished ? "El número guanyador és" : "La teva sort, a punt de sortir"}</h1>
+    <h1 className="show-label">{draw.unawarded ? "Premi sense adjudicar" : finished ? "El número guanyador és" : "La teva sort, a punt de sortir"}</h1>
     <div className="show-digits" aria-hidden="true">{winner.split("").map((digit, index) => {
       const settled = elapsed >= 3000 + index * 900;
       return <span key={index} className={settled ? "settled" : "spinning"}>{settled ? digit : digits[index]}</span>;
     })}</div>
-    <p className="show-result" role="status">{finished ? `Número guanyador ${winner}` : "Extraient número…"}</p>
-    <div className="show-wait">{finished ? (draw.position === total ? "Tots els números revelats · Gràcies per celebrar-ho amb nosaltres" : "Celebrem aquest premi. El següent, en uns instants.") : "000 — 999 · Mil números, un moment únic"}</div>
-    {finished && <div className="show-confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ left: `${(i * 43) % 100}%`, animationDelay: `${i * .035}s`, background: ["#ffdc45", "#e75294", "#00b1cd", "#94c954"][i % 4] }} />)}</div>}
+    <p className="show-result" role="status">{draw.unawarded ? "Cap dels dos números és present" : finished ? `Número guanyador ${winner}` : "Extraient número…"}</p>
+    <div className="show-wait">{draw.unawarded ? (draw.position === total ? "Últim premi tancat · Gràcies per celebrar-ho amb nosaltres" : "Premi tancat. Esperant el següent premi.") : finished ? (draw.position === total ? "Tots els números revelats · Gràcies per celebrar-ho amb nosaltres" : "Celebrem aquest premi. El següent, en uns instants.") : "000 — 999 · Mil números, un moment únic"}</div>
+    {finished && !draw.unawarded && <div className="show-confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ left: `${(i * 43) % 100}%`, animationDelay: `${i * .035}s`, background: ["#ffdc45", "#e75294", "#00b1cd", "#94c954"][i % 4] }} />)}</div>}
   </section>;
 }
 
