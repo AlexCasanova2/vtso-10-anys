@@ -66,3 +66,68 @@
   .draw-reveal { min-width:100%; padding-inline:20px; }
   .event-shell footer { flex-wrap:wrap; }
 }
+
+.campaign-shell { display:flex; flex-direction:column; background:#080808; color:white; isolation:isolate; }
+.campaign-confetti { position:absolute; z-index:-1; inset:0; background:url('/brand/confeti.png') center 38% / 100% auto no-repeat; opacity:.8; pointer-events:none; }
+.campaign-shell nav { min-height:50px; }
+.campaign-shell .anniversary { color:var(--red); }
+.campaign-shell .anniversary small { writing-mode:initial; max-width:4ch; line-height:1.1; font-size:.7rem; }
+.campaign-shell .event-hero { flex:1; width:100%; min-height:0; grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr); gap:clamp(32px,5vw,80px); padding:64px 0 48px; }
+.campaign-shell .event-copy > .eyebrow:first-child { font-size:clamp(1.5rem,3vw,2.5rem); letter-spacing:-.025em; text-transform:none; }
+.campaign-shell .event-copy h1 { font-family:var(--font-body),sans-serif; font-weight:800; font-size:clamp(4rem,7.6vw,8rem); line-height:.95; text-transform:none; margin:.18em 0; }
+.campaign-shell .event-copy mark { margin-top:.02em; padding:0; background:transparent; color:var(--red); font-size:1.3em; white-space:nowrap; line-height:1; letter-spacing:-.055em; }
+.campaign-shell .event-message { font-size:clamp(1.15rem,2vw,1.6rem); margin:16px 0; }
+.campaign-shell .countdown-title { margin-top:30px; color:#d0d0d0; font-size:.8rem; letter-spacing:.08em; }
+.campaign-shell .countdown { gap:28px; }
+.campaign-shell .countdown strong { font-size:clamp(2.5rem,4.5vw,4.5rem); color:var(--yellow); font-variant-numeric:tabular-nums; }
+.campaign-shell .countdown span { color:#d0d0d0; font-size:.75rem; }
+.campaign-shell .join-card { padding:32px; margin-top:48px; border-radius:0 24px 24px 24px; background:#f0f1ef; color:var(--ink); box-shadow:none; }
+.campaign-shell .join-card h2 { margin:0 0 20px; font-family:var(--font-body),sans-serif; font-size:clamp(1.8rem,3.1vw,3rem); font-weight:800; line-height:1.05; text-transform:none; }
+.campaign-shell .join-card > p { font-size:1.05rem; line-height:1.4; }
+.campaign-seal { position:absolute; top:-112px; right:8px; width:140px; height:auto; background:radial-gradient(circle,white 65%,transparent 66%); }
+.campaign-shell .participant-stat { margin-bottom:0; border-bottom:0; }
+.campaign-shell .participant-stat strong { color:#008397; }
+.campaign-shell .participant-stat span { font-size:.9rem; }
+.campaign-ribbon { position:relative; z-index:2; flex:none; height:8px; background:var(--red); margin:12px calc(clamp(20px,4vw,64px) * -1) 36px; }
+.campaign-ribbon img { position:absolute; left:50%; top:-30px; width:100px; height:auto; transform:translateX(-50%) rotate(-8deg); }
+.campaign-shell footer { margin-top:auto; padding-top:16px; min-height:44px; color:#dedede; font-size:.8rem; }
+
+@media (max-width:800px) {
+  .campaign-shell .event-hero { grid-template-columns:1fr; padding:44px 0 36px; gap:100px; }
+  .campaign-confetti { background-size:auto 1100px; background-position:center top; opacity:.55; }
+  .campaign-shell .event-copy h1 { font-size:clamp(3.2rem,11vw,5.8rem); }
+  .campaign-shell .event-copy mark { font-size:1.2em; }
+  .campaign-shell .event-message { max-width:32ch; }
+  .campaign-shell .join-card { margin-top:0; padding:28px; }
+  .campaign-shell .join-card h2 { font-size:2.2rem; }
+  .campaign-seal { width:112px; top:-88px; right:12px; }
+  .campaign-shell .countdown { gap:24px; }
+  .campaign-shell .countdown-title { font-size:.7rem; }
+  .campaign-shell .brand img { width:170px; }
+  .campaign-ribbon { margin-top:20px; margin-bottom:48px; }
+  .campaign-shell footer { font-size:.7rem; }
+}
+
+@media (min-width:500px) and (max-aspect-ratio:1/1) {
+  .campaign-shell.display-mode { height:100svh; min-height:960px; padding:28px 38px 20px; }
+  .campaign-shell.display-mode .brand img { width:210px; }
+  .campaign-shell.display-mode .event-hero { grid-template-columns:1fr; align-content:center; gap:70px; padding:24px 0; }
+  .campaign-shell.display-mode .event-copy > .eyebrow:first-child { font-size:32px; }
+  .campaign-shell.display-mode .event-copy h1 { font-size:clamp(64px,min(12vw,8svh),96px); }
+  .campaign-shell.display-mode .event-copy mark { font-size:1.25em; }
+  .campaign-shell.display-mode .event-message { max-width:none; font-size:24px; }
+  .campaign-shell.display-mode .countdown-title { margin-top:24px; font-size:14px; }
+  .campaign-shell.display-mode .countdown { gap:36px; }
+  .campaign-shell.display-mode .countdown strong { font-size:56px; }
+  .campaign-shell.display-mode .countdown span { font-size:13px; }
+  .campaign-shell.display-mode .join-card { padding:24px 28px; margin-top:0; }
+  .campaign-shell.display-mode .join-card h2 { font-size:36px; margin-bottom:16px; }
+  .campaign-shell.display-mode .join-card > p { font-size:20px; margin:12px 0; }
+  .campaign-shell.display-mode .participant-stat { padding:12px 0 0; margin:16px 0 0; }
+  .campaign-shell.display-mode .participant-stat span { font-size:16px; }
+  .campaign-shell.display-mode .campaign-seal { width:128px; top:-96px; right:16px; }
+  .campaign-shell.display-mode .campaign-confetti { background-size:100% auto; opacity:.65; }
+  .campaign-shell.display-mode .campaign-ribbon { margin:16px -38px 40px; }
+  .campaign-shell.display-mode .campaign-ribbon img { width:90px; top:-26px; }
+  .campaign-shell.display-mode footer { font-size:12px; }
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Users } from "lucide-react";
 import { usePublicEvent } from "@/components/use-public-event";
 import { Brand } from "@/components/brand";
@@ -30,15 +31,15 @@ export function EventScreen({ displayMode = false }: { displayMode?: boolean }) 
     return () => clearTimeout(timer);
   }, [event, router]);
 
-  if (event === undefined) return <main className="event-shell loading">Preparant la celebració…</main>;
-  if (!event) return <main className="event-shell empty"><Brand /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p></main>;
+  if (event === undefined) return <main className="event-shell campaign-shell loading">Preparant la celebració…</main>;
+  if (!event) return <main className="event-shell campaign-shell empty"><Brand inverse /><h1 className="display">Properament</h1><p>La pròxima jornada apareixerà aquí quan estigui configurada.</p></main>;
 
   const open = new Date() >= new Date(event.registration_opens_at) && new Date() < new Date(event.registration_closes_at) && ["scheduled", "registration_open"].includes(event.status);
 
   return (
-    <main className={`event-shell ${displayMode ? "display-mode" : ""}`}>
-      <div className="ambient-shapes" aria-hidden="true"><span className="orbit orbit-one" /><span className="orbit orbit-two" /><span className="brand-triangle triangle-one" /><span className="brand-triangle triangle-two" /><span className="brand-triangle triangle-three" /><span className="giant-ten">10</span></div>
-      <nav><Brand /><span className="anniversary">10 <small>ANYS</small></span></nav>
+    <main className={`event-shell campaign-shell ${displayMode ? "display-mode" : ""}`}>
+      <div className="campaign-confetti" aria-hidden="true" />
+      <nav><Brand inverse /><span className="anniversary">10 <small>ANYS JUNTS</small></span></nav>
       <section className="event-hero">
         <div className="event-copy">
           <p className="eyebrow">Fem 10 anys</p>
@@ -47,13 +48,14 @@ export function EventScreen({ displayMode = false }: { displayMode?: boolean }) 
           <p className="eyebrow countdown-title">El sorteig comença d&apos;aquí a</p><Countdown target={event.starts_at} />
         </div>
         <aside className="join-card">
+          <Image className="campaign-seal" src="/brand/sello.png" alt="10, 17 i 24 d’octubre" width={279} height={279} sizes="140px" />
           <h2 className="display">Presenta el tiquet.<br />Participa.</h2>
           {open && <p>Inscripció presencial al punt d&apos;atenció. 60 €: 1 número · 80 €: 2 números · 100 € o més: 3 números.</p>}
           <div className="participant-stat"><Users size={22} /><strong>{event.participant_count}</strong><span>números assignats avui</span></div>
           {!open && <p className="closed-note">La inscripció està tancada en aquest moment.</p>}
         </aside>
       </section>
-      <div className="event-ticker" aria-hidden="true"><div className="ticker-track"><div className="ticker-group"><span>40 PREMIS DE 250 €</span><i>◆</i><span>10 ANYS JUNTS</span><i>◆</i><span>10.000 € EN PREMIS</span><i>◆</i></div><div className="ticker-group"><span>40 PREMIS DE 250 €</span><i>◆</i><span>10 ANYS JUNTS</span><i>◆</i><span>10.000 € EN PREMIS</span><i>◆</i></div></div></div>
+      <div className="campaign-ribbon" aria-hidden="true"><Image src="/brand/lazo.png" alt="" width={326} height={331} sizes="110px" /></div>
       <footer><span>{event.name}</span><span>{event.venue}</span></footer>
     </main>
   );
