@@ -94,7 +94,7 @@
 
 @media (max-width:800px) {
   .campaign-shell .event-hero { grid-template-columns:1fr; padding:44px 0 36px; gap:100px; }
-  .campaign-confetti { background-size:auto 1100px; background-position:center top; opacity:.55; }
+  .campaign-confetti { background-size:100% auto; background-position:center top; background-repeat:repeat-y; opacity:.65; }
   .campaign-shell .event-copy h1 { font-size:clamp(3.2rem,11vw,5.8rem); }
   .campaign-shell .event-copy mark { font-size:1.2em; }
   .campaign-shell .event-message { max-width:32ch; }
@@ -126,7 +126,7 @@
   .campaign-shell.display-mode .participant-stat { padding:12px 0 0; margin:16px 0 0; }
   .campaign-shell.display-mode .participant-stat span { font-size:16px; }
   .campaign-shell.display-mode .campaign-seal { width:128px; top:-96px; right:16px; }
-  .campaign-shell.display-mode .campaign-confetti { background-size:100% auto; opacity:.65; }
+  .campaign-shell.display-mode .campaign-confetti { background-size:100% auto; background-repeat:no-repeat; opacity:.65; }
   .campaign-shell.display-mode .campaign-ribbon { margin:16px -38px 40px; }
   .campaign-shell.display-mode .campaign-ribbon img { width:90px; top:-26px; }
   .campaign-shell.display-mode footer { font-size:12px; }
