@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Users } from "lucide-react";
 import { usePublicEvent } from "@/components/use-public-event";
 import { Brand } from "@/components/brand";
+import { CampaignConfetti } from "@/components/campaign-confetti";
 
 function Countdown({ target }: { target: string }) {
   const [now, setNow] = useState(() => Date.now());
@@ -38,7 +39,7 @@ export function EventScreen({ displayMode = false }: { displayMode?: boolean }) 
 
   return (
     <main className={`event-shell campaign-shell ${displayMode ? "display-mode" : ""}`}>
-      <div className="campaign-confetti" aria-hidden="true" />
+      <CampaignConfetti />
       <nav><Brand inverse /><span className="anniversary">10 <small>ANYS JUNTS</small></span></nav>
       <section className="event-hero">
         <div className="event-copy">
