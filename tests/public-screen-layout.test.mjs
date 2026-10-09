@@ -7,6 +7,7 @@ const source = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("both public entry points select the display layout", () => {
   for (const path of ["app/page.tsx", "app/pantalla/page.tsx"]) {
     assert.match(source(path), /<EventScreen displayMode\s*\/>/);
+    assert.match(source(path), /<PublicDisplay>/);
   }
 });
 
@@ -19,10 +20,14 @@ test("public screen layouts do not depend on the input signal orientation", () =
   assert.match(source("app/event.css"), /\.campaign-shell\.display-mode \.event-hero\s*\{[^}]*grid-template-columns:1fr/);
 });
 
-test("display safe margins use the viewport width rather than the height-limited type scale", () => {
-  assert.match(source("app/event.css"), /--screen-gutter:5vw/);
-  assert.match(source("app/sorteig/sorteig.css"), /--show-padding:5vw/);
+test("display safe margins follow the logical canvas width rather than the type scale", () => {
+  assert.match(source("app/event.css"), /--screen-gutter:calc\(var\(--display-width,100vw\) \* \.05\)/);
+  assert.match(source("app/sorteig/sorteig.css"), /--show-padding:calc\(var\(--display-width,100vw\) \* \.05\)/);
   for (const path of ["app/event.css", "app/sorteig/sorteig.css"]) {
     assert.match(source(path), /\.campaign-ribbon\s*\{\s*margin:calc\(var\(--(?:screen|show)-unit\) \* 1\.5\) 0 /);
   }
+});
+
+test("live draws use the same physical display canvas", () => {
+  assert.match(source("app/sorteig/page.tsx"), /<PublicDisplay><DrawScreen/);
 });

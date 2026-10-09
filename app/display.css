@@ -1,0 +1,4 @@
+@media (min-width:500px) {
+  .public-display { position:relative; width:100%; height:100svh; overflow:hidden; background:#080808; }
+  .public-display-canvas { --display-width:var(--display-canvas-width); --display-height:var(--display-canvas-height); --display-unit:calc(var(--display-width) * .01); position:absolute; top:0; left:0; width:var(--display-width); height:var(--display-height); transform-origin:top left; transform:scale(var(--display-scale-x,1),var(--display-scale-y,1)); }
+}

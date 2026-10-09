@@ -43,9 +43,9 @@
 @keyframes show-load { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes show-roll { 50% { transform:translateY(3px); filter:blur(2px); } }
 @keyframes show-lock { 0% { transform:rotateX(-20deg) scale(1.08); filter:brightness(1.25); } 100% { transform:none; } }
-@keyframes show-confetti { to { transform:translateY(100svh) rotate(500deg); opacity:0; } }
+@keyframes show-confetti { to { transform:translateY(var(--display-height,100svh)) rotate(500deg); opacity:0; } }
 @media (min-width:500px) {
-  .draw-show { --show-unit:min(1vw,.667svh); --show-padding:5vw; height:100svh; min-height:0; padding-block:3svh; }
+  .draw-show { --show-unit:var(--display-unit,min(1vw,.667svh)); --show-padding:calc(var(--display-width,100vw) * .05); height:var(--display-height,100svh); min-height:0; padding-block:calc(var(--display-height,100svh) * .03); }
   .draw-show .show-header { gap:calc(var(--show-unit) * 2); }
   .draw-show .show-header .brand img { width:calc(var(--show-unit) * 27); }
   .draw-show .show-live { font-size:calc(var(--show-unit) * 1.5); gap:calc(var(--show-unit) * 1); }

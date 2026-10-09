@@ -47,6 +47,16 @@ Al marcar una jornada como finalizada se revelan las semillas. Con ellas, el lis
 
 ## Operación del evento
 
+### Pantalla LED de 2 × 3 metros
+
+Abre la página principal o `/pantalla` en pantalla completa, con salida de **1024 × 640 píxeles**. La controladora debe distribuir toda esa señal sobre los **2 metros de ancho y 3 de alto**, sin bandas ni recortes.
+
+Las páginas públicas y `/sorteig` componen sobre un lienzo lógico de 640 × 960 (2:3) y lo adaptan a la señal de salida. Esto compensa el estiramiento de la controladora: en un monitor convencional de 16:10 la imagen se verá ancha y achatada, pero recuperará sus proporciones en el LED. Los márgenes reservan el 5 % lateral y el 3 % vertical: 10 cm por lado y 9 cm arriba y abajo en la instalación indicada.
+
+La adaptación se aplica a navegadores con un ancho de al menos 500 píxeles; los móviles conservan su diseño habitual. Si cambian las dimensiones físicas, el mapeo de la controladora o la superficie utilizada por la señal, hay que revisar esta compensación. Las barras del navegador deben permanecer ocultas para que el contenido ocupe toda la señal.
+
+### Control del sorteo
+
 - El cierre se configura por jornada; se recomienda fijarlo diez minutos antes del inicio.
 - El personal comprueba físicamente el ticket (referencia, importe y fecha) y la pertenencia al Club. En el modo completo registra también apellidos y documento, y confirma que el participante ha aceptado las bases y leído la política de privacidad. La fecha del ticket no se almacena en la aplicación.
 - En el modo de enlace, el personal registra solo referencia, importe, nombre y correo; la persona completa el resto mediante el enlace recibido. Antes de confirmar no tiene números asignados. La referencia no puede confirmarse dos veces en la misma jornada. En ambos modos se envía un correo final con todos los números acumulados.

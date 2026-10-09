@@ -1,4 +1,4 @@
-.event-shell { position:relative; min-height:100svh; padding:24px clamp(20px,4vw,64px) 18px; overflow:hidden; background:var(--yellow); background-image:radial-gradient(circle at 73% 14%,rgba(255,255,255,.52),transparent 24%),linear-gradient(135deg,transparent 70%,rgba(255,255,255,.2) 70%); }
+.event-shell { position:relative; min-height:var(--display-height,100svh); padding:24px clamp(20px,4vw,64px) 18px; overflow:hidden; background:var(--yellow); background-image:radial-gradient(circle at 73% 14%,rgba(255,255,255,.52),transparent 24%),linear-gradient(135deg,transparent 70%,rgba(255,255,255,.2) 70%); }
 .event-shell nav { position:relative; z-index:3; display:flex; align-items:center; justify-content:space-between; }
 .ambient-shapes { position:absolute; z-index:0; inset:0; pointer-events:none; }
 .giant-ten { position:absolute; top:4%; right:-3%; color:rgba(0,0,0,.055); font:800 clamp(20rem,46vw,48rem)/.75 var(--font-display); letter-spacing:-.09em; animation:ten-breathe 7s ease-in-out infinite; }
@@ -120,7 +120,7 @@
 }
 
 @media (min-width:500px) {
-  .campaign-shell.display-mode { --screen-unit:min(1vw, .667svh); --screen-gutter:5vw; height:100svh; min-height:0; padding:3svh var(--screen-gutter); }
+  .campaign-shell.display-mode { --screen-unit:var(--display-unit,min(1vw, .667svh)); --screen-gutter:calc(var(--display-width,100vw) * .05); height:var(--display-height,100svh); min-height:0; padding:calc(var(--display-height,100svh) * .03) var(--screen-gutter); }
   .campaign-shell.display-mode nav { min-height:calc(var(--screen-unit) * 7); }
   .campaign-shell.display-mode .brand img { width:calc(var(--screen-unit) * 27); }
   .campaign-shell.display-mode .anniversary { font-size:calc(var(--screen-unit) * 4.2); }

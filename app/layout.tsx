@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./display.css";
 import "./event.css";
 import "./register.css";
 import "./admin.css";
