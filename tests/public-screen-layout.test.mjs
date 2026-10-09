@@ -18,3 +18,11 @@ test("public screen layouts do not depend on the input signal orientation", () =
   }
   assert.match(source("app/event.css"), /\.campaign-shell\.display-mode \.event-hero\s*\{[^}]*grid-template-columns:1fr/);
 });
+
+test("display safe margins use the viewport width rather than the height-limited type scale", () => {
+  assert.match(source("app/event.css"), /--screen-gutter:5vw/);
+  assert.match(source("app/sorteig/sorteig.css"), /--show-padding:5vw/);
+  for (const path of ["app/event.css", "app/sorteig/sorteig.css"]) {
+    assert.match(source(path), /\.campaign-ribbon\s*\{\s*margin:calc\(var\(--(?:screen|show)-unit\) \* 1\.5\) 0 /);
+  }
+});

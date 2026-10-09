@@ -120,7 +120,7 @@
 }
 
 @media (min-width:500px) {
-  .campaign-shell.display-mode { --screen-unit:min(1vw, .667svh); --screen-gutter:calc(var(--screen-unit) * 3.5); height:100svh; min-height:0; padding:calc(var(--screen-unit) * 2.6) var(--screen-gutter) calc(var(--screen-unit) * 1.85); }
+  .campaign-shell.display-mode { --screen-unit:min(1vw, .667svh); --screen-gutter:5vw; height:100svh; min-height:0; padding:3svh var(--screen-gutter); }
   .campaign-shell.display-mode nav { min-height:calc(var(--screen-unit) * 7); }
   .campaign-shell.display-mode .brand img { width:calc(var(--screen-unit) * 27); }
   .campaign-shell.display-mode .anniversary { font-size:calc(var(--screen-unit) * 4.2); }
@@ -143,7 +143,7 @@
   .campaign-shell.display-mode .participant-stat svg { width:calc(var(--screen-unit) * 3); height:calc(var(--screen-unit) * 3); }
   .campaign-shell.display-mode .participant-stat span { font-size:calc(var(--screen-unit) * 2.2); }
   .campaign-shell.display-mode .campaign-seal { width:calc(var(--screen-unit) * 17); top:calc(var(--screen-unit) * -12.5); right:calc(var(--screen-unit) * 2); }
-  .campaign-shell.display-mode .campaign-ribbon { margin:calc(var(--screen-unit) * 1.5) calc(var(--screen-gutter) * -1) calc(var(--screen-unit) * 4); }
+  .campaign-shell.display-mode .campaign-ribbon { margin:calc(var(--screen-unit) * 1.5) 0 calc(var(--screen-unit) * 4); }
   .campaign-shell.display-mode .campaign-ribbon img { width:calc(var(--screen-unit) * 12); top:calc(var(--screen-unit) * -3.5); }
   .campaign-shell.display-mode footer { min-height:0; padding-top:calc(var(--screen-unit) * 1.5); font-size:calc(var(--screen-unit) * 1.5); }
 }

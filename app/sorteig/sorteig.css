@@ -45,7 +45,7 @@
 @keyframes show-lock { 0% { transform:rotateX(-20deg) scale(1.08); filter:brightness(1.25); } 100% { transform:none; } }
 @keyframes show-confetti { to { transform:translateY(100svh) rotate(500deg); opacity:0; } }
 @media (min-width:500px) {
-  .draw-show { --show-unit:min(1vw,.667svh); --show-padding:calc(var(--show-unit) * 3.5); height:100svh; min-height:0; padding-block:calc(var(--show-unit) * 2.6); }
+  .draw-show { --show-unit:min(1vw,.667svh); --show-padding:5vw; height:100svh; min-height:0; padding-block:3svh; }
   .draw-show .show-header { gap:calc(var(--show-unit) * 2); }
   .draw-show .show-header .brand img { width:calc(var(--show-unit) * 27); }
   .draw-show .show-live { font-size:calc(var(--show-unit) * 1.5); gap:calc(var(--show-unit) * 1); }
@@ -60,10 +60,10 @@
   .draw-show .show-loading { width:calc(var(--show-unit) * 30); height:calc(var(--show-unit) * .7); margin:calc(var(--show-unit) * 4) auto; }
   .draw-show .show-label { font-size:calc(var(--show-unit) * 5.5); line-height:1.1; margin:0; }
   .draw-show .show-digits { gap:calc(var(--show-unit) * 1.5); margin:calc(var(--show-unit) * 3) auto; }
-  .draw-show .show-digits span { width:calc(var(--show-unit) * 30); height:calc(var(--show-unit) * 52); font-size:calc(var(--show-unit) * 44); border-radius:calc(var(--show-unit) * 2.5); }
+  .draw-show .show-digits span { width:calc(var(--show-unit) * 29); height:calc(var(--show-unit) * 52); font-size:calc(var(--show-unit) * 44); border-radius:calc(var(--show-unit) * 2.5); }
   .draw-show .show-result { font-size:calc(var(--show-unit) * 2.8); line-height:1.3; min-height:0; margin:0; }
   .draw-show .show-wait { font-size:calc(var(--show-unit) * 2.8); margin-top:calc(var(--show-unit) * 3); max-width:36ch; }
-  .draw-show .campaign-ribbon { margin-block:calc(var(--show-unit) * 1.5) calc(var(--show-unit) * 4); }
+  .draw-show .campaign-ribbon { margin:calc(var(--show-unit) * 1.5) 0 calc(var(--show-unit) * 4); }
   .draw-show .campaign-ribbon img { width:calc(var(--show-unit) * 12); top:calc(var(--show-unit) * -3.5); }
   .draw-show .show-footer { gap:calc(var(--show-unit) * 2.5) calc(var(--show-unit) * 1.5); padding-top:calc(var(--show-unit) * 2); }
   .draw-show .show-footer > div { gap:calc(var(--show-unit) * 1); }
