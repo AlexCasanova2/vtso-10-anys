@@ -120,24 +120,30 @@
 }
 
 @media (min-width:500px) and (max-aspect-ratio:1/1) {
-  .campaign-shell.display-mode { height:100svh; min-height:960px; padding:28px 38px 20px; }
-  .campaign-shell.display-mode .brand img { width:210px; }
-  .campaign-shell.display-mode .event-hero { grid-template-columns:1fr; align-content:center; gap:70px; padding:24px 0; }
-  .campaign-shell.display-mode .event-copy > .eyebrow:first-child { font-size:32px; }
-  .campaign-shell.display-mode .event-copy h1 { font-size:clamp(64px,min(12vw,8svh),96px); }
+  .campaign-shell.display-mode { --screen-unit:min(1vw, .667svh); --screen-gutter:calc(var(--screen-unit) * 3.5); height:100svh; min-height:0; padding:calc(var(--screen-unit) * 2.6) var(--screen-gutter) calc(var(--screen-unit) * 1.85); }
+  .campaign-shell.display-mode nav { min-height:calc(var(--screen-unit) * 7); }
+  .campaign-shell.display-mode .brand img { width:calc(var(--screen-unit) * 27); }
+  .campaign-shell.display-mode .anniversary { font-size:calc(var(--screen-unit) * 4.2); }
+  .campaign-shell.display-mode .anniversary small { font-size:calc(var(--screen-unit) * 1.1); }
+  .campaign-shell.display-mode .event-hero { max-width:none; grid-template-columns:1fr; align-content:center; gap:calc(var(--screen-unit) * 14); padding:calc(var(--screen-unit) * 2.2) 0; }
+  .campaign-shell.display-mode .event-copy > .eyebrow:first-child { font-size:calc(var(--screen-unit) * 4.5); }
+  .campaign-shell.display-mode .event-copy h1 { font-size:calc(var(--screen-unit) * 16.5); }
   .campaign-shell.display-mode .event-copy mark { font-size:1.25em; }
-  .campaign-shell.display-mode .event-message { max-width:none; font-size:24px; }
-  .campaign-shell.display-mode .countdown-title { margin-top:24px; font-size:14px; }
-  .campaign-shell.display-mode .countdown { gap:36px; }
-  .campaign-shell.display-mode .countdown strong { font-size:56px; }
-  .campaign-shell.display-mode .countdown span { font-size:13px; }
-  .campaign-shell.display-mode .join-card { padding:24px 28px; margin-top:0; }
-  .campaign-shell.display-mode .join-card h2 { font-size:36px; margin-bottom:16px; }
-  .campaign-shell.display-mode .join-card > p { font-size:20px; margin:12px 0; }
-  .campaign-shell.display-mode .participant-stat { padding:12px 0 0; margin:16px 0 0; }
-  .campaign-shell.display-mode .participant-stat span { font-size:16px; }
-  .campaign-shell.display-mode .campaign-seal { width:128px; top:-96px; right:16px; }
-  .campaign-shell.display-mode .campaign-ribbon { margin:16px -38px 40px; }
-  .campaign-shell.display-mode .campaign-ribbon img { width:90px; top:-26px; }
-  .campaign-shell.display-mode footer { font-size:12px; }
+  .campaign-shell.display-mode .event-message { max-width:none; font-size:calc(var(--screen-unit) * 3.4); margin:calc(var(--screen-unit) * 1.5) 0; }
+  .campaign-shell.display-mode .countdown-title { margin-top:calc(var(--screen-unit) * 3.5); font-size:calc(var(--screen-unit) * 1.8); }
+  .campaign-shell.display-mode .countdown { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:calc(var(--screen-unit) * 3); margin-top:calc(var(--screen-unit) * 1.2); }
+  .campaign-shell.display-mode .countdown strong { font-size:calc(var(--screen-unit) * 10); }
+  .campaign-shell.display-mode .countdown span { font-size:calc(var(--screen-unit) * 1.8); }
+  .campaign-shell.display-mode .draw-start-wait { margin-top:calc(var(--screen-unit) * 3.5); font-size:calc(var(--screen-unit) * 3.4); }
+  .campaign-shell.display-mode .join-card { padding:calc(var(--screen-unit) * 3); margin-top:0; border-radius:0 calc(var(--screen-unit) * 3) calc(var(--screen-unit) * 3) calc(var(--screen-unit) * 3); }
+  .campaign-shell.display-mode .join-card h2 { font-size:calc(var(--screen-unit) * 5); margin-bottom:calc(var(--screen-unit) * 2); }
+  .campaign-shell.display-mode .join-card > p { font-size:calc(var(--screen-unit) * 2.5); margin:calc(var(--screen-unit) * 1.5) 0; }
+  .campaign-shell.display-mode .participant-stat { padding:calc(var(--screen-unit) * 1.5) 0 0; margin:calc(var(--screen-unit) * 2) 0 0; }
+  .campaign-shell.display-mode .participant-stat strong { font-size:calc(var(--screen-unit) * 4.5); }
+  .campaign-shell.display-mode .participant-stat svg { width:calc(var(--screen-unit) * 3); height:calc(var(--screen-unit) * 3); }
+  .campaign-shell.display-mode .participant-stat span { font-size:calc(var(--screen-unit) * 2.2); }
+  .campaign-shell.display-mode .campaign-seal { width:calc(var(--screen-unit) * 17); top:calc(var(--screen-unit) * -12.5); right:calc(var(--screen-unit) * 2); }
+  .campaign-shell.display-mode .campaign-ribbon { margin:calc(var(--screen-unit) * 1.5) calc(var(--screen-gutter) * -1) calc(var(--screen-unit) * 4); }
+  .campaign-shell.display-mode .campaign-ribbon img { width:calc(var(--screen-unit) * 12); top:calc(var(--screen-unit) * -3.5); }
+  .campaign-shell.display-mode footer { min-height:0; padding-top:calc(var(--screen-unit) * 1.5); font-size:calc(var(--screen-unit) * 1.5); }
 }
