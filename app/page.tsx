@@ -1,5 +1,5 @@
 import { EventScreen } from "@/components/event-screen";
 
 export default function Home() {
-  return <EventScreen />;
+  return <EventScreen displayMode />;
 }

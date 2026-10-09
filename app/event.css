@@ -119,7 +119,7 @@
   .campaign-shell footer { font-size:.7rem; }
 }
 
-@media (min-width:500px) and (max-aspect-ratio:1/1) {
+@media (min-width:500px) {
   .campaign-shell.display-mode { --screen-unit:min(1vw, .667svh); --screen-gutter:calc(var(--screen-unit) * 3.5); height:100svh; min-height:0; padding:calc(var(--screen-unit) * 2.6) var(--screen-gutter) calc(var(--screen-unit) * 1.85); }
   .campaign-shell.display-mode nav { min-height:calc(var(--screen-unit) * 7); }
   .campaign-shell.display-mode .brand img { width:calc(var(--screen-unit) * 27); }
