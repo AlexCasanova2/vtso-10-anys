@@ -22,6 +22,12 @@ test("accepts dates with registration closed before the draw", () => {
   assert.equal(eventSchema.safeParse({ ...event, startsAt: event.registrationClosesAt }).success, true);
 });
 
+test("attempt limit defaults to enabled and only accepts an explicit boolean", () => {
+  assert.equal(eventSchema.parse(event).limitDrawAttempts, true);
+  assert.equal(eventSchema.parse({ ...event, limitDrawAttempts: false }).limitDrawAttempts, false);
+  assert.equal(eventSchema.safeParse({ ...event, limitDrawAttempts: "false" }).success, false);
+});
+
 test("rejects dates that violate the database event window constraint", () => {
   for (const dates of [
     { registrationClosesAt: event.registrationOpensAt },

@@ -1,6 +1,7 @@
 export type EventStatus = "draft" | "scheduled" | "registration_open" | "registration_closed" | "drawing" | "completed";
 
 export type EventDay = {
+  limit_draw_attempts?: boolean;
   staff_registration_full?: boolean;
   id: string;
   name: string;

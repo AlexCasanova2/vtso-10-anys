@@ -19,7 +19,7 @@ async function getEvent(request: Request) {
   const eventId = new URL(request.url).searchParams.get("id");
   await reconcileEventStatuses();
   const supabase = createAdminClient();
-  const fields = "id,name,starts_at,registration_opens_at,registration_closes_at,prize_count,prize_value_cents,status,venue,club_signup_url,terms_url,privacy_url,public_message,draw_seed_commitment,draw_seed_revealed";
+  const fields = "id,name,starts_at,registration_opens_at,registration_closes_at,prize_count,prize_value_cents,status,venue,club_signup_url,terms_url,privacy_url,public_message,limit_draw_attempts,draw_seed_commitment,draw_seed_revealed";
 
   if (eventId) {
     const { data, error } = await supabase.from("events").select(fields).eq("id", eventId).single();

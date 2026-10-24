@@ -21,6 +21,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@types/node": "^24.5.2",
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.1.16",

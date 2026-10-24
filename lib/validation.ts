@@ -53,6 +53,7 @@ export const fullStaffRegistrationSchema = staffRegistrationSchema.extend({
 });
 
 export const eventSchema = z.object({
+  limitDrawAttempts: z.boolean().default(true),
   staffRegistrationFull: z.boolean().default(true),
   name: z.string().trim().min(3).max(100),
   startsAt: z.string().datetime(),
